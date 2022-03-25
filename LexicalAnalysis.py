@@ -107,9 +107,7 @@ class LexicalAnalysis:
         else:
             print(*self.errors, sep='\n')
 
-if __name__=="__main__":
-
-    code1='''{}program pp
+code1='''{}program pp
 type t=integer;
 var integer v1,v2,v3;
 char a1,b,c;
@@ -125,7 +123,7 @@ Begin
    write(v1)
 end.'''
 
-    code2='''program p
+code2='''program p
 type t=integer;
 var t v1;
 char v2;
@@ -134,7 +132,7 @@ begin
    v1:=v1+10;
    write(v1)
 end.'''
-    obj=LexicalAnalysis(txt=code1)
-    obj.analyze()
-    print(obj.tokens)
-    print(*obj.tokens, sep='\n')
+#obj=LexicalAnalysis(txt=code2)
+#obj.analyze()
+#print(obj.tokens)
+#print(*obj.tokens, sep='\n')
