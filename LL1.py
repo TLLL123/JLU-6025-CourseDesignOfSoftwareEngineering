@@ -1,4 +1,6 @@
 import LexicalAnalysis as tokens
+from graphviz import Digraph
+#将树可视化参考链接：http://www.graphviz.org/doc/info/shapes.html
 
 class GrammaticalAnalysis_LL1:
     TERMINAL=[
@@ -6,6 +8,7 @@ class GrammaticalAnalysis_LL1:
         'VAR','PROCEDURE','BEGIN','IF','THEN','ELSE','FI','WHILE','DO','ENDWH',
         'READ','WRITE','RETURN','+','-','*','/','(',')','[',']',',',';',':=','=','..','>','<','.'
     ]
+
     LL1Table={
         'Program': {'PROGRAM': ['ProgramHead', 'DeclarePart', 'ProgramBody']},
         'ProgramHead': {'PROGRAM': ['PROGRAM', 'ProgramName']},
@@ -152,6 +155,7 @@ class GrammaticalAnalysis_LL1:
         '.': {'.': ['MATCH']},
         '=': {'=': ['MATCH']}
     }
+
     reverseMap={
                         'EQ': '='  ,   'LT': '<'       , 'PLUS': '+'     , 'MINUS': '-',
         'TIMES': '*'  , 'OVER': '/',   'LPAREN': '['   , 'RPAREN': ']'   , 'DOT': '.',
@@ -159,12 +163,20 @@ class GrammaticalAnalysis_LL1:
         'CONST':'INTC', 'ASSIGN':':=', 'UNDERANGE':'..',
     }
 
-    def analysis(self,code_list,linenum_list):
-        print('\33[34m{0:<46}\33[31m|{1:<50}'.format("输入流当前单词","分析栈"))
-        #code_list = ['PROGRAM', 'ID', 'TYPE', 'ID', '=', 'INTEGER', ';', 'VAR', 'ID', 'ID', ';', 'BEGIN', 'READ', '(','ID', ')', ';', 'ID', ':=', 'ID', '+', 'INTC', ';', 'WRITE', '(', 'ID', ')', 'END', '.','EOF']  # 输入流
-        ana_list = ['Program']  # 分析栈初始状态
-        ana_tab = self.LL1Table
+    def __init__(self,root):
+        self.root=root
+        self.matchTags=[]#记录所有终极符结点的序号
+
+    def analysis(self,code_list,linenum_list,root):
+        nodeCount=1
+        ana_list = [root]  # 分析栈初始状态
+        LL1Table = self.LL1Table
         pdeal = 0  # 输入流当前处理到了哪
+        print('\n\33[34m{0:<46}\33[31m|{1:<50}'.format("输入流当前单词", "分析栈"))
+        tempChildren = []
+        for i in ana_list:tempChildren.append(i.data)
+        print('\33[34m{0:<50}\33[31m|{1:<50}'.format('', str(tempChildren)))
+        matchTags=self.matchTags
 
         while True:
             if ana_list == []:
@@ -172,38 +184,75 @@ class GrammaticalAnalysis_LL1:
                 return
             else:
                 # 输入流当前值不属于任何产生式的predict集合
-                if code_list[pdeal] not in ana_tab[ana_list[0]]:
+                if code_list[pdeal] not in LL1Table[ana_list[0].data]:
                     print("LL(1)分析中断，第"+str(linenum_list[pdeal])+"行单词" + str(code_list[pdeal]) + "出现语法错误")
-                    return
+                    return 0
                 # 分析栈头符为终极符时，与输入流当前扫描到的终极符不一样
-                elif ((ana_list[0] in self.TERMINAL) and (code_list[pdeal] in self.TERMINAL) and (ana_list[0] != code_list[pdeal])):
+                elif ((ana_list[0].data in self.TERMINAL) and (code_list[pdeal] in self.TERMINAL) and (ana_list[0].data != code_list[pdeal])):
                     print("LL(1)分析中断，第"+str(linenum_list[pdeal])+"行单词" + str(code_list[pdeal]) + "出现语法错误")
-                    return
+                    return 0
                 # 分析栈与输入流待扫描元素不同时为空
                 elif ((len(ana_list) == 0 and code_list[pdeal] != '.') or (code_list[pdeal] == '.' and len(ana_list) != 0)):
                     print("LL(1)分析中断，第"+str(linenum_list[pdeal])+"行单词" + str(code_list[pdeal]) + "出现语法错误")
-                    return
+                    return 0
 
                 # 分析栈顶为终极符且与输入流当前值相同
-                elif len(ana_tab[ana_list[0]][code_list[pdeal]]) == 1 and ana_tab[ana_list[0]][code_list[pdeal]][0] == 'MATCH':
+                elif len(LL1Table[ana_list[0].data][code_list[pdeal]]) == 1 and LL1Table[ana_list[0].data][code_list[pdeal]][0] == 'MATCH':
                     pdeal += 1
+                    matchTags.append(ana_list[0].tag)
                     ana_list.pop(0)
-                    print('\33[32m{0:<50}'.format("MATCH:"+str(code_list[pdeal-1])))
+
+                    tempChildren = []
+                    for i in ana_list:tempChildren.append(i.data)
+                    print('\33[32m{0:<50}\33[33m|{1:<50}'.format("MATCH:"+str(code_list[pdeal-1]),str(tempChildren)))
                 # 分析栈顶为非终极符，查表用相应产生式右部进行替换
                 else:
-                    k = 1
-                    for item in ana_tab[ana_list[0]][code_list[pdeal]]:
-                        ana_list.insert(k, item)
-                        k += 1
-                    print('\33[34m{0:<50}\33[31m|{1:<50}'.format(str(code_list[pdeal]),str(ana_list)))
-                    ana_list.pop(0)
-                    print('\33[34m{0:<50}\33[31m|{1:<50}'.format(str(code_list[pdeal]),str(ana_list)))
+                    fatherNode=ana_list[0]
+                    i = 1
+                    for item in LL1Table[ana_list[0].data][code_list[pdeal]]:
+                        nodeCount+=1
+                        sonNode=Node([],item,nodeCount)
+                        fatherNode.children.append(sonNode)
 
-obj_tokens=tokens.LexicalAnalysis(txt=tokens.code2)
+                        ana_list.insert(i, sonNode)
+                        i += 1
+                    if(i==1):#产生式右部为空
+                        nodeCount+=1
+                        sonNode=Node([],'',nodeCount)
+                        fatherNode.children.append(sonNode)
+
+                    ana_list.pop(0)
+
+                    tempChildren=[]
+                    for i in ana_list:tempChildren.append(i.data)
+                    print('\33[34m{0:<50}\33[31m|{1:<50}'.format(str(code_list[pdeal]),str(tempChildren)))
+
+class Node:
+    def __init__(self,children,data,tag):
+        self.children=children
+        self.data=data
+        self.tag=tag
+
+def drawTree(root,matchTags):
+    dot = Digraph(comment='Tree')
+    def connectNode(node):
+        if(len(node.children)>0):
+            for child in node.children:
+                if(child.tag in matchTags):
+                    dot.node(str(child.tag), child.data, shape='plaintext',fontcolor='crimson')
+                else:
+                    dot.node(str(child.tag),child.data,shape='plaintext')
+                dot.edge(str(node.tag),str(child.tag),arrowshape='none')
+                connectNode(child)#递归
+    dot.node(str(root.tag),root.data,shape='plaintext')
+    connectNode(root)
+    dot.render('SyntaxTree-output/SyntaxTree.gv', view=True)
+
+obj_tokens=tokens.LexicalAnalysis(txt=tokens.code1)
 print(tokens.code2)
 obj_tokens.analyze()
 if(len(obj_tokens.errors)!=0):
-    print("请按提示修改错误后再进行语法分析")
+    print("请按提示修改词法错误后再进行语法分析")
     exit()
 print("此程序的token序列:")
 print(obj_tokens.tokens)
@@ -218,8 +267,15 @@ for i in obj_tokens.tokens:
     linenumlist.append(i[0])
 print("codelist:")
 print(codelist)
-print("linenumlist:")
-print(linenumlist)
+#print("linenumlist:")
+#print(linenumlist)
 
-obj_LL1=GrammaticalAnalysis_LL1()
-obj_LL1.analysis(codelist,linenumlist)
+root=Node([],'Program',1)#从语法树根结点开始做语法分析
+obj_LL1=GrammaticalAnalysis_LL1(root)
+flag=obj_LL1.analysis(codelist,linenumlist,root)
+if(flag==0):
+    print("请按提示修改语法错误后，再尝试进行语法分析并生成语法树")
+    exit()
+drawTree(root,obj_LL1.matchTags)
+
+print('\33[39m{0:<50}'.format("语法树见'SyntaxTree-output/SyntaxTree.gv.pdf'"))
