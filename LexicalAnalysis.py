@@ -73,9 +73,9 @@ class LexicalAnalysis:
     def analyze(self):
         txt=self.txt
         nowState=0
+        stateList=[]
         line=1
         charbuf=[]
-        txt+='$'
         for ch in txt:
             chCopy=ch
             if ch in '\t\n':
@@ -85,6 +85,8 @@ class LexicalAnalysis:
             if(nextState!=0):#当前单词尚未识别完毕
                 charbuf.append(ch)
                 nowState=nextState
+                #print(nowState)
+                stateList.append(nowState)
             else:#已完成一个单词的识别
                 if charbuf != [' ']:#跳过空格
                     newToken=self.getToken(nowState,line,charbuf)
@@ -96,6 +98,8 @@ class LexicalAnalysis:
                     else:
                         self.tokens.append(newToken)
                 nowState=self.stateTransitionTable[0][chtype]
+                #print(nowState)
+                stateList.append(nowState)
                 charbuf=[ch]
             if(chCopy=='\n'):
                 line+=1
@@ -103,9 +107,10 @@ class LexicalAnalysis:
                 self.tokens.append((line,"EOF","文件结束符号，无语义信息"))
 
         if(len(self.errors)==0):
-            print("无词法错误\n")
+            print("无词法错误")
         else:
             print(*self.errors, sep='\n')
+        return stateList
 
 code1='''{}program pp
 type t=integer;
@@ -114,9 +119,11 @@ char a1,b,c;
 array [1..20] of integer d;
 procedure f();
    begin
-      v1 := 20 + 10
+      v1 := 20 + 10;
       if v1 = 30
       then a1 := 'e'
+      else v2:=10
+      fi
    End
 Begin
    f();
@@ -128,11 +135,60 @@ type t=integer;
 var t v1;
 char v2;
 begin
-   read(v1);
+   read(v1)
    v1:=v1+10;
    write(v1)
 end.'''
-#obj=LexicalAnalysis(txt=code2)
-#obj.analyze()
-#print(obj.tokens)
+
+code3='''program  bubble
+var  integer  i,j,num;
+     array [1..20] of integer  a;
+procedure  q(integer num);
+var  integer i,j,k;
+     integer t;
+begin
+  i:=1;
+   while i < num do
+     j:=num-i+1;
+     k:=1;
+     while k<j  do
+    	if a[k+1] < a[k]  
+        then   
+	        t:=a[k];
+		    a[k]:=a[k+1];
+		    a[k+1]:=t
+        else  temp:=0
+        fi;   
+     k:=k+1
+     endwh;
+  i:=i+1
+  endwh
+end
+
+begin
+   read(num);
+   i:=1;
+   while i<(num+1)  do
+     read(j);
+     a[i]:=j;
+     i:=i+1
+   endwh;
+   q(num);
+   i:=1;
+   while  i<(num+1) do 
+       write(a[i]);
+       i:=i+1
+   endwh
+end.'''
+obj=LexicalAnalysis(txt=code2+'$')
+#字符序列列表charList
+charList=list(obj.txt)
+#print(charList)
+#print(len(charList))
+#状态序列列表stateList，每个元素均和charList对应
+stateList=obj.analyze()
+#print(stateList)
+#print(len(stateList))
+
+#print(obj.tokens)#token序列
 #print(*obj.tokens, sep='\n')
