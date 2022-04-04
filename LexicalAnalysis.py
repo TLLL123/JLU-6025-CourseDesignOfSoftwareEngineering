@@ -52,19 +52,19 @@ class LexicalAnalysis:
         if(state==1):
             CapsLK=word.upper()
             if CapsLK in self.reservedWords:
-                return (line,CapsLK,"保留字，无语义信息")
+                return (line,CapsLK,word)
             else:
                 return (line,"ID",word)
         if(state==2):
             number=int(word)#恰巧SNL语言没有浮点型数
             return (line,"CONST",number)
-        if(state==3):return (line,self.operators[word],"分界符，无语义信息")
+        if(state==3):return (line,self.operators[word],word)
         if(state==4):pass
-        if(state==5):return (line,"ASSIGN","分界符，无语义信息")
+        if(state==5):return (line,"ASSIGN",word)
         if(state==6):pass
-        if(state==7):return (line,"NOTES","注释，忽略")
-        if(state==8):return (line,"DOT","程序结束符，无语义信息")
-        if(state==9):return (line,"UNDERANGE")
+        if(state==7):return (line,"NOTES",word)
+        if(state==8):return (line,"DOT",word)
+        if(state==9):return (line,"UNDERANGE",word)
         if(state==10):pass
         if(state==11):pass
         if(state==12):return (line,"ID",word)
@@ -130,13 +130,30 @@ Begin
    write(v1)
 end.'''
 
-code2='''program p
-type t=integer;
-var t v1;
-char v2;
+code2='''Program p
+type t=integer;t=char;
+var t v1,v2,v3,v4,v5;
+array[1..20] of integer a,b,c;
+
+procedure v1Add(integer v1);
+var integer temp1;
 begin
-   read(v1)
-   v1:=v1+10;
+   temp1:=10;
+   v1:=v1+temp1;
+   write(v1)
+end
+
+procedure v1Dec(integer v1);
+var integer temp2;
+begin
+   temp2:=10;
+   v1:=v1-temp2;
+   write(v1)
+end
+
+begin
+   read(v1);
+   v1Add(v1);
    write(v1)
 end.'''
 
