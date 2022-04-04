@@ -77,7 +77,7 @@ class GrammaticalAnalysis_LL1:
                 'WRITE': ['OutputStm'],
                 'RETURN': ['ReturnStm'],
                 'ID': ['ID', 'AssCall']},
-        'AssCall': {':=': ['AssignmentRest'],
+        'AssCall': {':=': ['AssignmentRest'], '.': ['AssignmentRest'], '[': ['AssignmentRest'],
                     '(': ['CallStmRest']},#不同
         'AssignmentRest': {'[': ['VariMore', ':=', 'Exp'], ':=': ['VariMore', ':=', 'Exp'],'.': ['VariMore', ':=', 'Exp']},#不同
         'ConditionalStm': {'IF': ['IF', 'RelExp', 'THEN', 'StmList', 'ELSE', 'StmList', 'FI']},
@@ -103,11 +103,11 @@ class GrammaticalAnalysis_LL1:
                    'INTC': ['INTC'],
                    'ID': ['Variable']},
         'Variable': {'ID': ['ID', 'VariMore']},
-        'VariMore': {':=': [],'*': [], '/': [],'+': [], '-': [], '<': [], '=': [], 'THEN': [],'ELSE': [],'FI':[],'DO': [],'ENDWH':[],')': [],'END':[],';': [],',': [],
+        'VariMore': {':=': [],'*': [], '/': [],'+': [], '-': [], '<': [], '=': [], 'THEN': [],'ELSE': [],'FI':[],'DO': [],'ENDWH':[],')': [],'END':[],';': [],',': [],']':[],
                      '[': ['[', 'Exp', ']'],
                      '.': ['.', 'FieldVar']},
         'FieldVar': {'ID': ['ID', 'FieldVarMore']},
-        'FieldVarMore': {':=': [],'*': [], '/': [],'+': [], '-': [], '<': [], '=': [], 'THEN': [],'ELSE': [],'FI':[],'DO': [],'ENDWH':[],')': [],'END':[],';': [],',': [],
+        'FieldVarMore': {':=': [],'*': [], '/': [],'+': [], '-': [], '<': [], '=': [], 'THEN': [],'ELSE': [],'FI':[],'DO': [],'ENDWH':[],')': [],'END':[],';': [],',': [],']':[],
                          '[': ['[', 'Exp', ']']},#不同
         'CmpOp': {'<': ['<'],
                   '=': ['=']},
@@ -115,45 +115,6 @@ class GrammaticalAnalysis_LL1:
                   '-': ['-']},
         'MultOp': {'*': ['*'],
                    '/': ['/']},
-        'PROGRAM': {'PROGRAM': ['MATCH']},
-        'ID': {'ID': ['MATCH']},
-        'TYPE': {'TYPE': ['MATCH']},
-        'INTEGER': {'INTEGER': ['MATCH']},
-        'CHAR': {'CHAR': ['MATCH']},
-        'ARRAY': {'ARRAY': ['MATCH']},
-        'OF': {'OF': ['MATCH']},
-        'INTC': {'INTC': ['MATCH']},
-        'RECORD': {'RECORD': ['MATCH']},
-        'END': {'END': ['MATCH']},
-        'VAR': {'VAR': ['MATCH']},
-        'PROCEDURE': {'PROCEDURE': ['MATCH']},
-        'BEGIN': {'BEGIN': ['MATCH']},
-        'IF': {'IF': ['MATCH']},
-        'THEN': {'THEN': ['MATCH']},
-        'ELSE': {'ELSE': ['MATCH']},
-        'FI': {'FI': ['MATCH']},
-        'WHILE': {'WHILE': ['MATCH']},
-        'DO': {'DO': ['MATCH']},
-        'ENDWH': {'ENDWH': ['MATCH']},
-        'READ': {'READ': ['MATCH']},
-        'WRITE': {'WRITE': ['MATCH']},
-        'RETURN': {'RETURN': ['MATCH']},
-        '+': {'+': ['MATCH']},
-        '-': {'-': ['MATCH']},
-        '*': {'*': ['MATCH']},
-        '/': {'/': ['MATCH']},
-        '(': {'(': ['MATCH']},
-        ')': {')': ['MATCH']},
-        '[': {'[': ['MATCH']},
-        ']': {']': ['MATCH']},
-        ',': {',': ['MATCH']},
-        ';': {';': ['MATCH']},
-        ':=': {':=': ['MATCH']},
-        '..': {'..': ['MATCH']},
-        '>': {'>': ['MATCH']},
-        '<': {'<': ['MATCH']},
-        '.': {'.': ['MATCH']},
-        '=': {'=': ['MATCH']}
     }
 
     reverseMap={
@@ -162,12 +123,13 @@ class GrammaticalAnalysis_LL1:
                         'SEMI': ';',   'COMMA': ','    , 'LMIDPAREN': '(', 'RMIDPAREN': ')',
         'CONST':'INTC', 'ASSIGN':':=', 'UNDERANGE':'..',
     }
+    flag=0#有语法错误则修改为1
 
     def __init__(self,root):
         self.root=root
         self.matchTags=[]#记录所有终极符结点的序号
 
-    def analysis(self,code_list,linenum_list,root):
+    def analysis(self,code_list,wordlist,linenum_list,root):
         nodeCount=1
         ana_list = [root]  # 分析栈初始状态
         LL1Table = self.LL1Table
@@ -183,21 +145,10 @@ class GrammaticalAnalysis_LL1:
                 print('\33[32m{0:<50}'.format("无语法错误"))
                 return
             else:
-                # 输入流当前值不属于任何产生式的predict集合
-                if code_list[pdeal] not in LL1Table[ana_list[0].data]:
-                    print("LL(1)分析中断，第"+str(linenum_list[pdeal])+"行单词" + str(code_list[pdeal]) + "出现语法错误")
-                    return 0
-                # 分析栈头符为终极符时，与输入流当前扫描到的终极符不一样
-                elif ((ana_list[0].data in self.TERMINAL) and (code_list[pdeal] in self.TERMINAL) and (ana_list[0].data != code_list[pdeal])):
-                    print("LL(1)分析中断，第"+str(linenum_list[pdeal])+"行单词" + str(code_list[pdeal]) + "出现语法错误")
-                    return 0
-                # 分析栈与输入流待扫描元素不同时为空
-                elif ((len(ana_list) == 0 and code_list[pdeal] != '.') or (code_list[pdeal] == '.' and len(ana_list) != 0)):
-                    print("LL(1)分析中断，第"+str(linenum_list[pdeal])+"行单词" + str(code_list[pdeal]) + "出现语法错误")
-                    return 0
-
                 # 分析栈顶为终极符且与输入流当前值相同
-                elif len(LL1Table[ana_list[0].data][code_list[pdeal]]) == 1 and LL1Table[ana_list[0].data][code_list[pdeal]][0] == 'MATCH':
+                if ana_list[0].data==code_list[pdeal]:
+                    ana_list[0].word=wordlist[pdeal]
+
                     pdeal += 1
                     matchTags.append(ana_list[0].tag)
                     ana_list.pop(0)
@@ -206,19 +157,19 @@ class GrammaticalAnalysis_LL1:
                     for i in ana_list:tempChildren.append(i.data)
                     print('\33[32m{0:<50}\33[33m|{1:<50}'.format("MATCH:"+str(code_list[pdeal-1]),str(tempChildren)))
                 # 分析栈顶为非终极符，查表用相应产生式右部进行替换
-                else:
+                elif code_list[pdeal] in LL1Table[ana_list[0].data]:
                     fatherNode=ana_list[0]
                     i = 1
                     for item in LL1Table[ana_list[0].data][code_list[pdeal]]:
                         nodeCount+=1
-                        sonNode=Node([],item,nodeCount)
+                        sonNode=Node([],item,nodeCount,None)
                         fatherNode.children.append(sonNode)
 
                         ana_list.insert(i, sonNode)
                         i += 1
                     if(i==1):#产生式右部为空
                         nodeCount+=1
-                        sonNode=Node([],'',nodeCount)
+                        sonNode=Node([],"ε",nodeCount,None)
                         fatherNode.children.append(sonNode)
 
                     ana_list.pop(0)
@@ -226,12 +177,17 @@ class GrammaticalAnalysis_LL1:
                     tempChildren=[]
                     for i in ana_list:tempChildren.append(i.data)
                     print('\33[34m{0:<50}\33[31m|{1:<50}'.format(str(code_list[pdeal]),str(tempChildren)))
+                #出现语法错误
+                else:
+                    print(("\33[31mLL(1)分析中断，第" + str(linenum_list[pdeal]) + "行单词" + str(wordlist[pdeal]) + "出现语法错误"))
+                    return 0
 
 class Node:
-    def __init__(self,children,data,tag):
+    def __init__(self,children,data,tag,word):
         self.children=children
-        self.data=data
+        self.data=data#记录对应的终极符
         self.tag=tag
+        self.word=word#记录对应的单词，仅叶节点才有
 
 def drawTree(root,matchTags):
     dot = Digraph(comment='Tree')
@@ -239,7 +195,7 @@ def drawTree(root,matchTags):
         if(len(node.children)>0):
             for child in node.children:
                 if(child.tag in matchTags):
-                    dot.node(str(child.tag), child.data, shape='plaintext',fontcolor='crimson')
+                    dot.node(str(child.tag), child.data+'---'+str(child.word), shape='plaintext',fontcolor='crimson')
                 else:
                     dot.node(str(child.tag),child.data,shape='plaintext')
                 dot.edge(str(node.tag),str(child.tag),arrowshape='none')
@@ -248,7 +204,7 @@ def drawTree(root,matchTags):
     connectNode(root)
     dot.render('SyntaxTree-output/SyntaxTree.gv', view=True)
 
-obj_tokens=tokens.LexicalAnalysis(txt=tokens.code1)
+obj_tokens=tokens.LexicalAnalysis(txt=tokens.code2)
 print(tokens.code2)
 obj_tokens.analyze()
 if(len(obj_tokens.errors)!=0):
@@ -257,23 +213,27 @@ if(len(obj_tokens.errors)!=0):
 print("此程序的token序列:")
 print(obj_tokens.tokens)
 
-codelist=[]
+codelist=[]#单词对应的终极符序列
 linenumlist=[]#标志每个单词所在的行号
+wordlist=[]#单词序列
 for i in obj_tokens.tokens:
     if i[1] in GrammaticalAnalysis_LL1.reverseMap:
         codelist.append(GrammaticalAnalysis_LL1.reverseMap[i[1]])
     else:
         codelist.append(i[1])
+    wordlist.append(i[2])
     linenumlist.append(i[0])
 print("codelist:")
 print(codelist)
 #print("linenumlist:")
 #print(linenumlist)
+print("wordlist:")
+print(wordlist)
 
-root=Node([],'Program',1)#从语法树根结点开始做语法分析
+root=Node([],'Program',1,None)#从语法树根结点开始做语法分析
 obj_LL1=GrammaticalAnalysis_LL1(root)
-flag=obj_LL1.analysis(codelist,linenumlist,root)
-if(flag==0):
+obj_LL1.flag=obj_LL1.analysis(codelist,wordlist,linenumlist,root)
+if(obj_LL1.flag==0):
     print("请按提示修改语法错误后，再尝试进行语法分析并生成语法树")
     exit()
 drawTree(root,obj_LL1.matchTags)
