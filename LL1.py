@@ -141,7 +141,7 @@ class GrammaticalAnalysis_LL1:
         matchTags=self.matchTags
 
         while True:
-            if ana_list == []:
+            if ana_list == [] and pdeal==len(code_list):
                 print('\33[32m{0:<50}'.format("无语法错误"))
                 return
             else:
@@ -157,7 +157,7 @@ class GrammaticalAnalysis_LL1:
                     for i in ana_list:tempChildren.append(i.data)
                     print('\33[32m{0:<50}\33[33m|{1:<50}'.format("MATCH:"+str(code_list[pdeal-1]),str(tempChildren)))
                 # 分析栈顶为非终极符，查表用相应产生式右部进行替换
-                elif code_list[pdeal] in LL1Table[ana_list[0].data]:
+                elif ana_list[0].data in LL1Table and code_list[pdeal] in LL1Table[ana_list[0].data]:
                     fatherNode=ana_list[0]
                     i = 1
                     for item in LL1Table[ana_list[0].data][code_list[pdeal]]:
@@ -179,7 +179,7 @@ class GrammaticalAnalysis_LL1:
                     print('\33[34m{0:<50}\33[31m|{1:<50}'.format(str(code_list[pdeal]),str(tempChildren)))
                 #出现语法错误
                 else:
-                    print(("\33[31mLL(1)分析中断，第" + str(linenum_list[pdeal]) + "行单词" + str(wordlist[pdeal]) + "出现语法错误"))
+                    print("\33[31mLL(1)分析中断，第" + str(linenum_list[pdeal]) + "行单词" + str(wordlist[pdeal]) + "出现语法错误")
                     return 0
 
 class Node:
