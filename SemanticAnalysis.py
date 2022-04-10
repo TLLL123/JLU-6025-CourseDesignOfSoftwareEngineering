@@ -1,6 +1,8 @@
 '''
 构造全局符号表，扫描完一层后删除当前层符号表
-检查当前层内重复定义错误、未定义就使用错误
+检查当前层内重复定义错误、
+未定义就使用错误、
+函数调用时参数类型及个数的匹配错误
 '''
 import LexicalAnalysis as tokens
 
@@ -50,6 +52,15 @@ def getType(name):
         if Sym.kind=='TYPE' and Sym.name==name:
             return Sym.type
 
+def name2type(name):#用于检查形实参是否匹配
+    for Sym in SymTab:
+        if Sym.kind == 'VAR' and Sym.name == name:
+            return Sym.type
+    if isinstance(name, int) == 1:
+        return 'INTEGER'
+    elif isinstance(name, str) == 1:
+        return 'CHAR'
+
 def returnSymItem(name):
     for Sym in SymTab:
         if Sym.name==name:
@@ -63,6 +74,7 @@ def outFormat(content):
 
 semanticErrorFlag=0
 lineSkipNum=[]
+print('\33[31m')#错误信息用红字输出
 for i in range(len(tokens)):
     if(tokens[i][0] in lineSkipNum):
         continue
@@ -169,9 +181,27 @@ for i in range(len(tokens)):
                         semanticErrorFlag = 1;flag=1
                         print("第"+str(tokens[j+1][0])+"行，数组"+str(tokens[j][2])+"下标越界,请修改错误后再继续进行语义分析")
                         break
+                elif tokens[j][2] in parameterDict:#检查函数调用时参数的匹配问题
+                    realParList=[]
+                    k=j+2
+                    while tokens[k][2]!=')':#提取实参列表
+                        if tokens[k][1]=='ID' and judgeDefine(tokens[k][2])==1:
+                            realParList.append(name2type(tokens[k][2]))
+                        elif tokens[k][1]=='CONST':
+                            realParList.append(name2type(tokens[k][2]))
+                        k+=1
+                    if realParList!=parameterDict[tokens[j][2]]:
+                        semanticErrorFlag = 1;flag=1
+                        if len(realParList)==len(parameterDict):
+                            print("第" + str(tokens[j][0]) + "行，调用" + str(tokens[j][2]) + "函数时形实参个数不相同，请修改后再进行语义分析")
+                        else:
+                            print("第" + str(tokens[j][0]) + "行，调用" + str(tokens[j][2]) + "函数时形实参类型不匹配，请修改后再进行语义分析")
+                        break
             if flag==1:
                 break
             j+=1
+        if semanticErrorFlag==1:
+            break
 
 print("\33[34m{0:<15}{1:<15}{2:<15}{3:<15}{4:<15}{5:<15}{6:<15}".format("name", "level","kind","type","ElemType","Low","Up"))
 for i in SymTab:
