@@ -1,0 +1,298 @@
+from tkinter import *
+import time
+import hashlib
+import matplotlib.image as imgplt
+import matplotlib.pyplot as plt
+from PIL import Image, ImageTk
+
+
+global num
+num =1
+
+
+
+
+class LexicalAnalysis:
+    def __init__(self,txt):
+        self.stateTransitionTable={
+            0: {0: 1, 1: 2, 2: 3, 3: 4, 4: 3, 5: 6, 6: 13, 7: 8, 8: 10, 9: 13},
+            1: {0: 1, 1: 1, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},
+            2: {0: 13, 1: 2, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},
+            3: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},
+            4: {0: 13, 1: 13, 2: 13, 3: 13, 4: 5, 5: 13, 6: 13, 7: 13, 8: 13, 9: 13},
+            5: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},
+            6: {0: 6, 1: 6, 2: 6, 3: 6, 4: 6, 5: 6, 6: 7, 7: 6, 8: 6, 9: 6},
+            7: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},
+            8: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 9, 8: 0, 9: 0},
+            9: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},
+            10: {0: 11, 1: 11, 2: 13, 3: 13, 4: 13, 5: 13, 6: 13, 7: 13, 8: 13, 9: 13},
+            11: {0: 13, 1: 13, 2: 13, 3: 13, 4: 13, 5: 13, 6: 13, 7: 13, 8: 12, 9: 13},
+            12: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},
+            13: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0}
+        }
+        self.txt=txt
+        self.tokens=[]
+        self.delimiters='+-*/();[]<, '
+        self.reservedWords=[
+            'PROGRAM', 'PROCEDURE', 'TYPE', 'VAR', 'IF',
+            'THEN', 'ELSE', 'FI', 'WHILE', 'DO',
+            'ENDWH', 'BEGIN', 'END', 'READ', 'WRITE',
+            'ARRAY', 'OF', 'RECORD', 'RETURN',
+            'INTEGER', 'CHAR'
+        ]
+        self.operators={
+                         '=': 'EQ',  '<': 'LT',    '+': 'PLUS',     '-': 'MINUS',
+            '*': 'TIMES','/': 'OVER','[': 'LPAREN',']': 'RPAREN',   '.': 'DOT',
+                         ';': 'SEMI',',': 'COMMA', '(': 'LMIDPAREN',')': 'RMIDPAREN'
+
+        }
+        self.errors=[]
+        self.errorLines=[]
+
+    def getCharType(self,ch):
+        if ch.isalpha(): return 0
+        if ch.isdigit(): return 1
+        if ch in self.delimiters: return 2
+        if ch == ':':return 3
+        if ch=='=': return 4
+        if ch=='{': return 5
+        if ch=='}': return 6
+        if ch=='.': return 7
+        if ch=='\'':return 8
+        return 9#其它字符
+
+    def getToken(self,state,line,buf):
+        word = "".join(buf)
+        if(state==1):
+            CapsLK=word.upper()
+            if CapsLK in self.reservedWords:
+                return (line,CapsLK,word)
+            else:
+                return (line,"ID",word)
+        if(state==2):
+            number=int(word)#恰巧SNL语言没有浮点型数
+            return (line,"CONST",number)
+        if(state==3):return (line,self.operators[word],word)
+        if(state==4):pass
+        if(state==5):return (line,"ASSIGN",word)
+        if(state==6):pass
+        if(state==7):return (line,"NOTES",word)
+        if(state==8):return (line,"DOT",word)
+        if(state==9):return (line,"UNDERANGE",word)
+        if(state==10):pass
+        if(state==11):pass
+        if(state==12):return (line,"ID",word)
+        if(state==13):return (line,"ERROR",word)
+
+    def analyze(self):
+        txt=self.txt
+        nowState=0
+        stateList=[]
+        line=1
+        charbuf=[]
+        for ch in txt:
+            chCopy=ch
+            if ch in '\t\n':
+                ch=' '
+            chtype=self.getCharType(ch)
+            nextState=self.stateTransitionTable[nowState][chtype]
+            if(nextState!=0):#当前单词尚未识别完毕
+                charbuf.append(ch)
+                nowState=nextState
+                #print(nowState)
+                stateList.append(nowState)
+            else:#已完成一个单词的识别
+                if charbuf != [' ']:#跳过空格
+                    newToken=self.getToken(nowState,line,charbuf)
+                    if(newToken[1]=="NOTES"):pass
+                    elif(newToken[1]=="ERROR"):
+                        tempString="第"+str(line)+"行"+"单词"+newToken[2]+"出现词法错误"+"\n"
+                        self.errors.append(tempString)
+                        self.errorLines.append(line)
+                    else:
+                        self.tokens.append(newToken)
+                nowState=self.stateTransitionTable[0][chtype]
+                #print(nowState)
+                stateList.append(nowState)
+                charbuf=[ch]
+            if(chCopy=='\n'):
+                line+=1
+            if(ch=='$'):
+                self.tokens.append((line,"EOF","文件结束符号，无语义信息"))
+
+        if(len(self.errors)==0):
+            print("无词法错误")
+        else:
+            print(*self.errors, sep='\n')
+        return stateList
+
+
+
+#-----------------------------界面布局------------------------------------#
+global src
+
+class GUI():
+    def __init__(self,init_window_name):
+        self.init_window_name = init_window_name                                                              #初始化
+
+#------------布局--------------#
+    def set_init_window(self):
+        self.init_window_name.title("6025编译")                                  #窗口名                       
+        #self.init_window_name.resizable(False, False)
+        face1(self.init_window_name)
+        
+
+class face1():
+    def __init__(self,master):
+        self.master = master
+        self.image_face1_file = Image.open("镇魂曲.jpg")
+        self.image_face1_file = self.image_face1_file.resize((1500,800))
+        self.face1_photo = ImageTk.PhotoImage(self.image_face1_file)
+        self.R =    Frame(self.master ,padx=1,pady=1)
+        self.R.grid(row=0,column = 0)
+        self.photo_label = Label(self.R , image=self.face1_photo).grid(row = 0, column = 0,rowspan=16,columnspan=16)
+        self.face1_enter_button = Button(self.R , text="进入编译界面",bg = 'white' , font="微软雅黑",width=15 , command = lambda:self.to_face2())
+        self.face1_enter_button.grid(row=13 ,column =7)
+
+    
+    def to_face2(self):
+        self.R.forget()
+        face2(self.master)
+
+
+class face2():
+    def __init__(self,master):
+        self.master = master
+        #---------------face2_photo--------------------#
+        self.image_file = Image.open("void.jpg")
+        self.image_file = self.image_file.resize((1500,800))
+        self.photo = ImageTk.PhotoImage(self.image_file)
+        self.F = Frame(self.master ,padx=1,pady=1)
+        self.F.grid(row=0,column = 0)
+        self.photo_label = Label(self.F , image=self.photo).grid(row = 0, column = 0,rowspan=30,columnspan=40)
+
+
+        #-----------face2_label--------------#
+        self.image_p = Image.open("aba.jpg")
+        self.image_p = self.image_p.resize((460,600))
+        self.p = ImageTk.PhotoImage(self.image_p)
+        self.init_data_label = Label(self.F, text="待编译数据")
+        self.init_data_label.grid(row=0, column=6)
+
+        self.result_data_label = Label(self.F, text="编译结果")
+        self.result_data_label.grid(row=0, column=15)
+        
+        self.result_data_label = Label(self.F, text="图片")
+        self.result_data_label.grid(row=0, column=25)
+
+        self.log_label = Label(self.F, image = self.p).grid(row=1, column=20 , rowspan =10,columnspan =10 )
+ 
+
+        
+        #face1_文本框
+        self.init_data_Text = Text(self.F, width=71, height=50)               #原始数据录入框
+        self.init_data_Text.grid(row=1,column=0, rowspan=10, columnspan=10)         # row 1-11 , column 0-10
+        self.result_data_Text = Text(self.F, width=71,height=50)            #处理结果展示
+        self.result_data_Text.grid(row=1, column=10, rowspan=10, columnspan=10)     # row 1-11 , column 10-20
+
+        self.face2_yy_button = Button(self.F, text="语义分析", bg="lightblue",font="微软雅黑", width=15,command=self.bianyi) 
+        self.face2_yy_button.grid(row=18 , column=6)
+        self.face2_yf_button = Button(self.F, text="LL1语法分析", bg="lightblue",font="微软雅黑", width=15,command=self.bianyi)
+        self.face2_yf_button.grid(row=18 , column=15)
+        self.face2_yfs_button = Button(self.F, text="语法树生成", bg="lightblue",font="微软雅黑", width=15,command=self.bianyi)
+        self.face2_yfs_button.grid(row=18 , column=25)
+        self.face2_dgxj_button = Button(self.F, text="递归下降语法分析", font="微软雅黑",width=15,command=self.bianyi)
+        self.face2_dgxj_button.grid(row=19 , column=6)
+        self.str_trans_to_md5_button = Button(self.F, text="语义分析",font="微软雅黑", width=15,command=self.bianyi)
+        self.str_trans_to_md5_button.grid(row=19 , column=15)
+        self.face2_run_button = Button(self.F, text="保存结果并退出",font="微软雅黑", width=15,command=lambda:self.to_face3())          #切换到2 
+        self.face2_run_button.grid(row=19 , column=25)
+#------------功能函数-----------#
+        
+    def bianyi(self):
+        global src
+        global num
+        src = self.init_data_Text.get(1.0,END).strip()
+        self.obj =LexicalAnalysis(txt=src+'$')
+        stateList=self.obj.analyze()
+        #print(stateList)                            #类型流
+
+        charList=list(self.obj.txt)     
+        #print(charList)                             #字符流
+
+        self.tokens = self.obj.tokens               #一整个token序列
+
+        j=-1
+        begin=0
+        store =0
+        self.result_data_Text.delete(1.0 ,END)
+        for i in stateList:
+            j=j+1
+            if int(i) in range (1,14):
+                if store != int(i) or int(i)==13:
+                    if store!=0:
+                        #print('t', int(i) , begin , j , store)                                                     #test用
+                        self.result_data_Text.insert(END , store)
+                        self.result_data_Text.insert(END , '    ')
+                        self.result_data_Text.insert(END , charList[begin:j])
+                        self.result_data_Text.insert(END , '\n')
+                        self.result_data_Text.insert(END , '\n')
+                    store = i
+                    begin = j
+                choose_pic = r"C:\Users\XUECHI\Desktop\picture\图片\Figure_"+ str(i) +".jpg"
+                self.img = Image.open(choose_pic)
+                self.img = self.img.resize((460,600))
+                self.img_png = ImageTk.PhotoImage(self.img)
+                self.log_label = Label(self.F, image = self.img_png).grid(row=1, column=20 , rowspan =10,columnspan =10)    # row 1-11 column 20-30
+                self.this = charList[j]
+                self.result_data_Text.insert(END, self.this )
+                self.result_data_Text.insert(END,'\n')
+                    
+                
+            else:
+                self.result_data_Text.insert(END, "ERROR")
+                self.result_data_Text.insert(END,'\n')
+            self.master.update()
+            self.master.after(100)
+  
+
+
+#-------------退出彩蛋--------------------# 
+    def to_face3(self):
+        self.F.forget()
+        face3(self.master)
+
+
+# ------------主函数--------------#
+
+
+
+
+class face3():
+    def __init__(self , master):
+        self.master = master
+        self.image_face1_file = Image.open("雪.jpg")
+        self.image_face1_file = self.image_face1_file.resize((1500,800))
+        self.face1_photo = ImageTk.PhotoImage(self.image_face1_file)
+        self.G =    Frame(self.master ,padx=1,pady=1)
+        self.G.grid(row=0,column = 0)
+        self.photo_label = Label(self.G , image=self.face1_photo).grid(row = 0, column = 0,rowspan=16,columnspan=16)
+        self.face1_enter_button = Button(self.G , text="谢谢观看",bg = 'white' , font="微软雅黑",width=15 , command = lambda:self.to_exit())
+        self.face1_enter_button.grid(row=13 ,column =7)
+
+    def to_exit(self):
+        self.G.forget()
+        
+
+def gui_start():
+    init_window = Tk()
+    ljh = GUI(init_window)              #设置窗口默认属性
+    ljh.set_init_window()
+    init_window.mainloop()
+
+
+
+
+gui_start()
+        
+    
