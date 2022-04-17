@@ -106,10 +106,6 @@ class LexicalAnalysis:
             if(ch=='$'):
                 self.tokens.append((line,"EOF","文件结束符号，无语义信息"))
 
-        if(len(self.errors)==0):
-            print("无词法错误")
-        else:
-            print(*self.errors, sep='\n')
         return stateList
 
 code1='''{}program pp
@@ -121,21 +117,28 @@ procedure f();
    begin
       v1 := 20 + 10;
       if v1 = 30
-      then a1 := 'e'
+      then v2 := 30
       else v2:=10
       fi
-   End
-Begin
+   end
+begin
    f();
    write(v1)
 end.'''
 
-code2='''Program p
-type t=integer;t=char;
-var t v1,v2,v3,v4,v5;
+code2='''program p
+type t=integer;
+t1=char;
+t2=record
+        integer e1,e2;
+        char f1,f2;
+        array[1..5] of integer g1,g2;
+   end;
+var t v1,v2,v3;
+t1 v4;
 array[1..20] of integer a,b,c;
 
-procedure v1Add(integer v1);
+procedure v1Add(t v1);
 var integer temp1;
 begin
    temp1:=10;
@@ -143,18 +146,31 @@ begin
    write(v1)
 end
 
-procedure v1Dec(integer v1);
+procedure v2Dec(integer v2);
 var integer temp2;
 begin
    temp2:=10;
-   v1:=v1-temp2;
-   write(v1)
+   v2:=v2-temp2;
+   write(v2)
 end
 
 begin
+   
+   v4:=v1;
+   v4:=a[1];
+   v1:=v2+v4;
+   
+   if v1<0
+   then read(v1)
+   else write(v1)
+   fi;
+   
    read(v1);
    v1Add(v1);
-   write(v1)
+   v2Dec(v2);
+   write(v1);
+   read(v1);
+   write(a[1])
 end.'''
 
 code3='''program  bubble
@@ -163,6 +179,7 @@ var  integer  i,j,num;
 procedure  q(integer num);
 var  integer i,j,k;
      integer t;
+     
 begin
   i:=1;
    while i < num do
@@ -197,7 +214,16 @@ begin
        i:=i+1
    endwh
 end.'''
-obj=LexicalAnalysis(txt=code2+'$')
+codeInput=''''''#多行字符串，接收外部输入
+codeInput=code2
+if len(codeInput)==0:
+    exit()
+obj=LexicalAnalysis(txt=codeInput+'$')
+if (len(obj.errors) == 0):
+    #print("无词法错误")
+    pass
+else:
+    print(*obj.errors, sep='\n')
 #字符序列列表charList
 charList=list(obj.txt)
 #print(charList)
