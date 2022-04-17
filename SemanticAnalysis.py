@@ -336,20 +336,22 @@ for i in range(len(tokens)):
         #delNowLevel(Level)
         Level-=1
     elif tokens[i][1]=='BEGIN':
+        lineSkipNum=[]
+        lineSkipNum.append(tokens[i][0])
         j = i + 1
-        # for i in SymTab:
-        #     print('\33[34m{0:<15}{1:<15}{2:<15}{3:<15}{4:<15}{5:<15}{6:<15}'.format(outFormat(i.name), outFormat(i.level),
-        #                                                                           outFormat(i.kind), outFormat(i.type),
-        #                                                                           outFormat(i.ElemType),
-        #                                                                           outFormat(i.Low), outFormat(i.Up)))
         flag=0
         while tokens[j][1]!='END':
+            lineSkipNum.append(tokens[j][0])
             if(tokens[j][1]=='ID'):
                 if judgeDefine(tokens[j][2])==0:
                     semanticErrorFlag=1;flag=1
                     print("\33[31m第"+str(tokens[j][0])+"行，标识符"+tokens[j][2]+"未定义就使用，请修改错误后再继续进行语义分析")
                     break
-                if tokens[j+1][2]=='[':
+                if tokens[j+1][2]=='[':#检查数组可能的相关错误
+                    if returnSymItem(tokens[j][2]).Up==None and returnSymItem(tokens[j][2]).Low==None:
+                        semanticErrorFlag = 1;flag = 1
+                        print("\33[31m第" + str(tokens[j][0]) + "行，标识符" + str(tokens[j][2]) + "不是数组类型，请修改错误后再继续进行语义分析")
+                        break
                     if tokens[j+2][1]=='ID':#用变量访问数组，直接跳过不作分析
                         j+=1
                         continue
@@ -379,6 +381,7 @@ for i in range(len(tokens)):
             if flag==1:
                 break
             j+=1
+        lineSkipNum.append(tokens[j][0])
         if semanticErrorFlag==1:
             break
 
