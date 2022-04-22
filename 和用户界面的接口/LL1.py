@@ -134,7 +134,7 @@ class GrammaticalAnalysis_LL1:
         ana_list = [root]  # 分析栈初始状态
         LL1Table = self.LL1Table
         pdeal = 0  # 输入流当前处理到了哪
-        print('\33[34m{0:<46}\33[31m|{1:<50}'.format("输入流当前单词", "分析栈"))
+        print('\n\33[34m{0:<46}\33[31m|{1:<50}'.format("输入流当前单词", "分析栈"))
         tempChildren = []
         for i in ana_list:tempChildren.append(i.data)
         print('\33[34m{0:<50}\33[31m|{1:<50}'.format('', str(tempChildren)))
@@ -145,11 +145,11 @@ class GrammaticalAnalysis_LL1:
                 print('\33[32m{0:<50}'.format("无语法错误"))
                 break
             else:
-                # 分析栈顶为终极符且与输入流当前值相同
                 if pdeal>=len(code_list):
                     print("请检查输入，输入不能为空")
                     self.flag=1
                     break
+                # 分析栈顶为终极符且与输入流当前值相同
                 elif ana_list[0].data==code_list[pdeal]:
                     ana_list[0].word=wordlist[pdeal]
 
@@ -197,7 +197,7 @@ class Node:
 
 def drawTree(root,matchTags):
     dot = Digraph(comment='Tree')
-    def connectNode(node):
+    def connectNode(node):#嵌套函数
         if(len(node.children)>0):
             for child in node.children:
                 if(child.tag in matchTags):
@@ -207,38 +207,30 @@ def drawTree(root,matchTags):
                 dot.edge(str(node.tag),str(child.tag),arrowshape='none')
                 connectNode(child)#递归
     dot.node(str(root.tag),root.data,shape='plaintext')
-    connectNode(root)
+    connectNode(root)#开始调用，从根开始建树
     dot.render('SyntaxTree-output/SyntaxTree.gv', view=True)
 
-obj_tokens=tokens.LexicalAnalysis(txt=tokens.obj.txt)#接收用户输入
-#print(tokens.codeInput)
-obj_tokens.analyze()
-if(len(obj_tokens.errors)!=0):
-    print("请按提示修改词法错误后再进行语法分析")
-    exit()
-#print("此程序的token序列:")
-#print(obj_tokens.tokens)
+def startLL1():
+    obj_tokens = tokens.startLexAnalysis(tokens.codeInput)  # 接收用户输入，先进行词法分析
+    if obj_tokens == None:
+        exit()
+    codelist = []  # 单词对应的终极符序列
+    linenumlist = []  # 标志每个单词所在的行号
+    wordlist = []  # 原单词序列
+    for i in obj_tokens:
+        if i[1] in GrammaticalAnalysis_LL1.reverseMap:
+            codelist.append(GrammaticalAnalysis_LL1.reverseMap[i[1]])
+        else:
+            codelist.append(i[1])
+        wordlist.append(i[2])
+        linenumlist.append(i[0])
+    print("\n代码段中每个单词对应的终极符序列如下：")
+    print(codelist)
+    root = Node([], 'Program', 1, None)
+    obj_LL1 = GrammaticalAnalysis_LL1(root)
+    obj_LL1.flag = obj_LL1.analysis(codelist, wordlist, linenumlist, root)  # 从语法树根结点开始做语法分析
+    if (obj_LL1.flag == 1):
+        print("\33[30m请按提示修改语法错误后，再进行后续工作")
+        exit()
 
-codelist=[]#单词对应的终极符序列
-linenumlist=[]#标志每个单词所在的行号
-wordlist=[]#单词序列
-for i in obj_tokens.tokens:
-    if i[1] in GrammaticalAnalysis_LL1.reverseMap:
-        codelist.append(GrammaticalAnalysis_LL1.reverseMap[i[1]])
-    else:
-        codelist.append(i[1])
-    wordlist.append(i[2])
-    linenumlist.append(i[0])
-print("codelist:")
-print(codelist)
-#print("linenumlist:")
-#print(linenumlist)
-#print("wordlist:")
-#print(wordlist)
-
-root=Node([],'Program',1,None)#从语法树根结点开始做语法分析
-obj_LL1=GrammaticalAnalysis_LL1(root)
-obj_LL1.flag=obj_LL1.analysis(codelist,wordlist,linenumlist,root)
-if(obj_LL1.flag==1):
-    print("\33[30m请按提示修改语法错误后，再尝试进行语法分析")
-    exit()
+startLL1()
