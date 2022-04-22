@@ -92,7 +92,7 @@ class LexicalAnalysis:
                     newToken=self.getToken(nowState,line,charbuf)
                     if(newToken[1]=="NOTES"):pass
                     elif(newToken[1]=="ERROR"):
-                        tempString="第"+str(line)+"行"+"单词"+newToken[2]+"出现词法错误"+"\n"
+                        tempString="第"+str(line)+"行"+"单词"+newToken[2]+"出现词法错误"
                         self.errors.append(tempString)
                         self.errorLines.append(line)
                     else:
@@ -126,16 +126,20 @@ begin
    write(v1)
 end.'''
 
-code2='''Program p
+code2='''program p
 type t=integer;
 t1=char;
 t2=record
-        integer e1,e2;
-        char f1,f2;
-        array[1..5] of integer g1,g2;
+        integer e1;
+        char f1;
+        array[1..5] of integer g1;
+        integer e2;
+        char f2;
+        array[1..5] of integer g2;
    end;
 var t v1,v2,v3;
 t1 v4;
+t2 rec1;
 array[1..20] of integer a,b,c;
 
 procedure v1Add(t v1);
@@ -155,8 +159,24 @@ begin
 end
 
 begin
+   {rec1.e1:=10;
+   rec1.f1:='a';
+   rec1.g1[5]:=10;}
+   
+   v4:='a';
+   
+   {v4:=v1;
+   v4:=a[1];
+   v1:=v2+v4;}
+   
+   if v1<0
+   then read(v1)
+   else write(v1)
+   fi;
+   
    read(v1);
-   v1Add(10);
+   v1Add(v10);
+   v2Dec(v2);
    write(v1);
    read(v1);
    write(a[1])
@@ -205,22 +225,27 @@ begin
 end.'''
 codeInput=''''''#多行字符串，接收外部输入
 codeInput=code2
-if len(codeInput)==0:
-    exit()
-obj=LexicalAnalysis(txt=codeInput+'$')
-if (len(obj.errors) == 0):
-    #print("无词法错误")
-    pass
-else:
-    print(*obj.errors, sep='\n')
-#字符序列列表charList
-charList=list(obj.txt)
-#print(charList)
-#print(len(charList))
-#状态序列列表stateList，每个元素均和charList对应
-stateList=obj.analyze()
-#print(stateList)
-#print(len(stateList))
 
-#print(obj.tokens)#token序列
-#print(*obj.tokens, sep='\n')
+def startLexAnalysis(codeInput):
+    if len(codeInput) == 0:
+        print("请检查输入，输入不能为空！")
+        exit()
+    obj = LexicalAnalysis(txt=codeInput + '$')
+    # 字符序列列表charList
+    charList = list(obj.txt)
+    # print(charList)
+    # print(len(charList))
+    # 状态序列列表stateList，每个元素均和charList对应
+    stateList = obj.analyze()
+    # print(stateList)
+    # print(len(stateList))
+    if (len(obj.errors) == 0):
+        print("\33[32m无词法错误，此代码段的token序列如下：\33[30m")
+        print(*obj.tokens, sep='\n')
+        return obj.tokens
+    else:
+        print(*obj.errors, sep='\n')
+        print("\33[31m请按提示修改此法错误后再进行后续工作")
+        return None
+
+startLexAnalysis(codeInput)
