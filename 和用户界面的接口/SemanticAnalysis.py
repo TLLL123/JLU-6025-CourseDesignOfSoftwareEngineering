@@ -99,9 +99,12 @@ while tokens[i][1]!='EOF':
                     flag=1;semanticErrorFlag=1
                     print("\33[31m第"+str(tokens[j][0])+"行，标识符"+tokens[j][2]+"重复定义，请修改错误后再进行语义分析")
                     break
-                if tokens[j+2][1]!='RECORD':
+
+                if tokens[j+2][1]=='ARRAY':
+                    SymTab.append(Symbol(tokens[j][2],Level,'TYPE','ARRAY',getType(tokens[j+9][2]),tokens[j+4][2],tokens[j+6][2]))
+                elif tokens[j+2][1]!='RECORD':
                     SymTab.append(Symbol(tokens[j][2],Level,'TYPE',getType(tokens[j+2][2]),None,None,None))
-                else:
+                else:#记录类型的别名
                     SymTab.append(Symbol(tokens[j][2],Level,'TYPE','RECORD',None,None,None))
                     recordSym.update({tokens[j][2]:{}})
                     k=j+3
@@ -135,7 +138,6 @@ while tokens[i][1]!='EOF':
                 for Sym in SymTab:
                     if Sym.name==tokens[j][2]:
                         nowType=Sym.type
-                        print("\33[30m" + nowType)
                         break
             else:
                 nowType=tokens[j][1]
@@ -153,7 +155,13 @@ while tokens[i][1]!='EOF':
                         semanticErrorFlag = 1;flag = 1
                         print("\33[31m第" + str(tokens[k][0]) + "行，标识符" + tokens[k][2] + "重复定义，请修改错误后再进行语义分析")
                         break
-                    if nowType=='RECORD':
+                    if nowType=='ARRAY':
+                        ElemType=None;Low=None;Up=None
+                        for SymItem in SymTab:
+                            if SymItem.name==tokens[j][2]:
+                                ElemType=SymItem.ElemType;Low=SymItem.Low;Up=SymItem.Up
+                        SymTab.append(Symbol(tokens[k][2],Level,'VAR','ARRAY',ElemType,Low,Up))
+                    elif nowType=='RECORD':
                         SymTab.append(Symbol(tokens[k][2], Level, 'VAR', 'RECORD', tokens[j][2], None, None))
                     else:
                         SymTab.append(Symbol(tokens[k][2],Level,'VAR',nowType,None,None,None))
