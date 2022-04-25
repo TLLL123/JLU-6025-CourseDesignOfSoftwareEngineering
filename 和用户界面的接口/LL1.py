@@ -63,7 +63,7 @@ class GrammaticalAnalysis_LL1:
                   'VAR': ['VAR', 'TypeDef', 'FormList']},
         'FormList': {'ID': ['ID', 'FidMore'],},#不同
         'FidMore': {';': [], ')': [],
-                    ',': {',', 'FormList'}},
+                    ',': [',', 'FormList']},
         'ProcDecPart':{'TYPE':['DeclarePart'],'VAR':['DeclarePart'],'PROCEDURE':['DeclarePart'],'BEGIN':['DeclarePart']},
         'ProcBody': {'BEGIN': ['ProgramBody']},
         'ProgramBody': {'BEGIN': ['BEGIN', 'StmList', 'END']},
