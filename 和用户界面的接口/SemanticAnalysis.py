@@ -123,7 +123,7 @@ while tokens[i][1]!='EOF':
                             m=k
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
-                                    recordSym[tokens[j][2]].update({tokens[k][2]:('ARRAY',tokens[m+2][2],tokens[m+4][2])})
+                                    recordSym[tokens[j][2]].update({tokens[k][2]:('ARRAY',getType(tokens[m+7][2]),tokens[m+2][2],tokens[m+4][2])})
                                 k+=1
                         k+=1
         if flag==1:
@@ -270,8 +270,8 @@ while tokens[i][1]!='EOF':
                         else:
                             print("\33[31m第" + str(tokens[j][0]) + "行，调用" + str(tokens[j][2]) + "函数时形实参类型不匹配，请修改后再进行语义分析")
                         break
-                    j=k+1
-                    continue
+                    #j=k+1
+                    #continue
             j+=1
         if semanticErrorFlag==1:
             break
