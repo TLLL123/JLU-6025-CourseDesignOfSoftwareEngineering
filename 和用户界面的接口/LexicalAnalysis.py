@@ -1,3 +1,5 @@
+import sys
+# -*- coding:ANSI -*-
 import string
 
 class LexicalAnalysis:
@@ -234,7 +236,7 @@ end.'''
 code4='''{值参、变参结合功能测试}program sd
 var 
     integer x,y,z;     
-    procedure f(integer x,y;var integer z);
+    procedure f(integer x,y;var integer z;char c);
     begin
 	z:=x+y+z;
 	write(x);
@@ -245,22 +247,22 @@ begin
 x:=3;
 y:=4;
 z:=5;
-f(x,y,z);
+f(x,y,z,'a');
 write(x);
 write(y);
 write(z);
-f(6,x+y+z,y);
+f(6,(x+(y+z)),y,'a');
 write(x);
 write(y);
 write(z);
-f(x+y,y/x,x);
+f(x+y,y/x,x,'a');
 write(x);
 write(y);
 write(z)
-end. '''
+end.'''
 
-codeInput=''''''#多行字符串，接收外部输入
-codeInput=code3
+with open(sys.path[0]+"/SNL语言例子/一般例子/c1.txt", "r", encoding='ANSI')as f:
+    codeInput = f.read()#多行字符串，接收外部输入
 
 def startLexAnalysis(codeInput):
     if len(codeInput) == 0:
