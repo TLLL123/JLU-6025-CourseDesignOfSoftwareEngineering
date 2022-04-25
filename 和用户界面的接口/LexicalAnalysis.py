@@ -1,3 +1,5 @@
+import string
+
 class LexicalAnalysis:
     def __init__(self,txt):
         self.stateTransitionTable={
@@ -36,7 +38,7 @@ class LexicalAnalysis:
         self.errorLines=[]
 
     def getCharType(self,ch):
-        if ch.isalpha(): return 0
+        if ch in string.ascii_letters: return 0
         if ch.isdigit(): return 1
         if ch in self.delimiters: return 2
         if ch == ':':return 3
@@ -174,8 +176,12 @@ begin
    else write(v1)
    fi;
    
+   while 0<v1
+   do v1:=v1-1
+   endwh;
+   
    read(v1);
-   v1Add(v10);
+   v1Add(v1);
    v2Dec(v2);
    write(v1);
    read(v1);
@@ -185,10 +191,11 @@ end.'''
 code3='''program  bubble
 var  integer  i,j,num;
      array [1..20] of integer  a;
-procedure  q(integer num);
+procedure  q(var integer num);
 var  integer i,j,k;
-     integer t;
-     
+     integer t,temp;
+     {char 123}{语法错误}
+{阿斯蒂阿斯蒂}{词法错误}
 begin
   i:=1;
    while i < num do
@@ -223,8 +230,37 @@ begin
        i:=i+1
    endwh
 end.'''
+
+code4='''{值参、变参结合功能测试}program sd
+var 
+    integer x,y,z;     
+    procedure f(integer x,y;var integer z);
+    begin
+	z:=x+y+z;
+	write(x);
+	write(y);
+	write(z)
+    end
+begin
+x:=3;
+y:=4;
+z:=5;
+f(x,y,z);
+write(x);
+write(y);
+write(z);
+f(6,x+y+z,y);
+write(x);
+write(y);
+write(z);
+f(x+y,y/x,x);
+write(x);
+write(y);
+write(z)
+end. '''
+
 codeInput=''''''#多行字符串，接收外部输入
-codeInput=code2
+codeInput=code3
 
 def startLexAnalysis(codeInput):
     if len(codeInput) == 0:
