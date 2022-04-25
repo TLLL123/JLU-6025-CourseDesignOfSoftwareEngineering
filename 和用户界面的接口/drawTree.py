@@ -208,7 +208,7 @@ def drawTree(root,matchTags):
                 connectNode(child)#递归
     dot.node(str(root.tag),root.data,shape='plaintext')
     connectNode(root)
-    dot.render('SyntaxTree-output/SyntaxTree', view=True)
+    dot.render('语法树输出/语法树', view=True)
 
 def startDrawTree():
     obj_tokens = tokens.startLexAnalysis(tokens.codeInput)
@@ -232,6 +232,6 @@ def startDrawTree():
         exit()
     else:
         drawTree(root, obj_LL1.matchTags)
-        print('\33[39m{0:<50}'.format("语法树见'SyntaxTree-output/SyntaxTree.pdf'"))
+        print('\33[39m{0:<50}'.format("语法树见'语法树输出/语法树.pdf'"))
 
 startDrawTree()
