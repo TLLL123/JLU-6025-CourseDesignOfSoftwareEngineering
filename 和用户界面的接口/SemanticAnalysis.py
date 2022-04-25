@@ -58,6 +58,7 @@ def getType(name):
     for Sym in SymTab:
         if Sym.kind=='TYPE' and Sym.name==name:
             return Sym.type
+    return None
 
 def name2type(name):#用于检查形实参是否匹配
     for Sym in SymTab:
@@ -183,17 +184,23 @@ while tokens[i][1]!='EOF':
         SymTab.append(Symbol(tokens[i+1][2],Level,'PROCEDURE',None,None,None,None))
         Level += 1
         parameterDict.update({tokens[i+1][2]:[]})
-        for j in range(i+3,len(tokens)):
-            if tokens[j][2]==')':
-                i=j+2
-                break
-            if tokens[j+1][1]=='ID' and tokens[j][2]!=';':
-                parameterDict[tokens[i+1][2]].append(getType(tokens[j][2]))
-                if redefinition(tokens[j+1][2],Level)==1:
-                    semanticErrorFlag = 1
-                    print("\33[31m第" + str(tokens[j + 1][0]) + "行，标识符" + tokens[j + 1][2] + "重复定义，请修改错误后再进行语义分析")
-                    break
-                SymTab.append(Symbol(tokens[j+1][2],Level,'VAR',getType(tokens[j][2]),None,None,None))
+        j=i+3
+        while tokens[j][2]!=';':
+            nowType = getType(tokens[j][2])
+            if nowType==None:
+                if tokens[j][1]=='VAR':
+                    j+=1
+                    continue
+                print("\33[31m第" + str(tokens[j][0]) + "行，类型标识符" + tokens[j][2] + "未定义，请修改错误后再进行语义分析")
+                semanticErrorFlag=1;break
+            k = j
+            while tokens[k][2] not in[';',')']:#统计一个类型后面所有的变量
+                if tokens[k][1]=='ID':
+                    parameterDict[tokens[i+1][2]].append(nowType)
+                    SymTab.append(Symbol(tokens[k][2],Level,'VAR',nowType,None,None,None))
+                k+=1
+            j=k+1
+        i=j+1
         if semanticErrorFlag==1:
             break
         continue
@@ -224,15 +231,28 @@ while tokens[i][1]!='EOF':
                 elif tokens[j+1][2]=='(' and tokens[j][2] in parameterDict:#检查函数调用时参数的匹配问题
                     realParList=[]
                     k=j+2
+                    parmOverFlag=0
                     while tokens[k][2]!=')':#提取实参列表
-                        if judgeDefine(tokens[k][2])==0:
-                            print("\33[31m第" + str(tokens[k][0]) + "行，标识符" + tokens[k][2] + "未定义就使用，请修改错误后再继续进行语义分析")
-                            semanticErrorFlag=1;break
-                        elif tokens[k][1]=='ID':
-                            realParList.append(name2type(tokens[k][2]))
-                        elif tokens[k][1]=='CONST':
-                            realParList.append(name2type(tokens[k][2]))
-                        k+=1
+                        m=k
+                        flag=0
+                        while tokens[m][2]!=',':
+                            if tokens[m+1][2]==';' or tokens[m+1][1]=='END':
+                                parmOverFlag=1
+                                break
+                            if tokens[m][1] == 'ID' and '\'' not in tokens[m][2]:
+                                if judgeDefine(tokens[m][2]) == 0:
+                                    print("\33[31m第" + str(tokens[k][0]) + "行，变量标识符" + tokens[k][2] + "未定义就使用，请修改错误后再继续进行语义分析")
+                                    semanticErrorFlag = 1;break
+                            if flag==0 and tokens[m][1] in ['ID','CONST']:#若实参是一个表达式，用第一个变量的类型作为整体类型
+                                flag=1
+                                realParList.append(name2type(tokens[m][2]))
+                            m+=1
+                        k=m+1
+                        if semanticErrorFlag == 1:
+                            break
+                        if parmOverFlag==1:
+                            break
+                    #print(realParList)
                     if semanticErrorFlag==1:
                         break
                     if realParList!=parameterDict[tokens[j][2]]:
@@ -242,6 +262,8 @@ while tokens[i][1]!='EOF':
                         else:
                             print("\33[31m第" + str(tokens[j][0]) + "行，调用" + str(tokens[j][2]) + "函数时形实参类型不匹配，请修改后再进行语义分析")
                         break
+                    j=k+1
+                    continue
             j+=1
         if semanticErrorFlag==1:
             break
