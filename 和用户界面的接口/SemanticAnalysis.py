@@ -101,6 +101,7 @@ while tokens[i][1]!='EOF':
                 if tokens[j+2][1]!='RECORD':
                     SymTab.append(Symbol(tokens[j][2],Level,'TYPE',getType(tokens[j+2][2]),None,None,None))
                 else:
+                    SymTab.append(Symbol(tokens[j][2],Level,'TYPE','RECORD',None,None,None))
                     recordSym.update({tokens[j][2]:{}})
                     k=j+3
                     while tokens[k][1]!='END':
@@ -137,16 +138,9 @@ while tokens[i][1]!='EOF':
             else:
                 nowType=tokens[j][1]
             if nowType==None:
-
-                for Sym in recordSym:
-                    if Sym==tokens[j][2]:
-                        nowType=Sym
-                        break
-
-                if nowType==None:
-                    semanticErrorFlag=1
-                    print("\33[31m第"+str(tokens[j][0])+"行，类型"+tokens[j][2]+"未定义，请修改错误后再进行语义分析")
-                    break
+                semanticErrorFlag=1
+                print("\33[31m第"+str(tokens[j][0])+"行，类型"+tokens[j][2]+"未定义，请修改错误后再进行语义分析")
+                break
             flag=0
             for k in range(j+1,len(tokens)):
                 if(tokens[k][2]==';'):#统计到i+2后第一个;之前
@@ -250,15 +244,14 @@ while tokens[i][1]!='EOF':
             j+=1
         if semanticErrorFlag==1:
             break
-        i=j+1
+        i=j
         continue
     i += 1
 
-print("\33[31m符号表：")
-print("\33[34m{0:<15}{1:<15}{2:<15}{3:<15}{4:<15}{5:<15}{6:<15}".format("name", "level","kind","type","ElemType","Low","Up"))
+print("\33[31m---------------------------------------符号表：-----------------------------------------------")
+print("\33[31m{0:<15}{1:<15}{2:<15}{3:<15}{4:<15}{5:<15}{6:<15}".format("name", "level","kind","type","ElemType","Low","Up"))
 for i in SymTab:
     print('\33[34m{0:<15}{1:<15}{2:<15}{3:<15}{4:<15}{5:<15}{6:<15}'.format(outFormat(i.name), outFormat(i.level),outFormat(i.kind),outFormat(i.type),outFormat(i.ElemType),outFormat(i.Low),outFormat(i.Up)))
-    #print('\33[34m{0:<15}{1:<15}{2:<15}{3:<15}{4:<15}{5:<15}{6:<15}'.format(str(i.name), str(i.level),str(i.kind),str(i.type),str(i.ElemType),str(i.Low),str(i.Up)))
 
 print("\33[31m形参表：\33[34m")
 print(parameterDict)
