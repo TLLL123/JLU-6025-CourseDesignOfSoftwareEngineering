@@ -134,6 +134,7 @@ while tokens[i][1]!='EOF':
                 for Sym in SymTab:
                     if Sym.name==tokens[j][2]:
                         nowType=Sym.type
+                        print("\33[30m" + nowType)
                         break
             else:
                 nowType=tokens[j][1]
@@ -151,8 +152,8 @@ while tokens[i][1]!='EOF':
                         semanticErrorFlag = 1;flag = 1
                         print("\33[31m第" + str(tokens[k][0]) + "行，标识符" + tokens[k][2] + "重复定义，请修改错误后再进行语义分析")
                         break
-                    if nowType in recordSym:
-                        SymTab.append(Symbol(tokens[k][2], Level, 'VAR', 'RECORD', nowType, None, None))
+                    if nowType=='RECORD':
+                        SymTab.append(Symbol(tokens[k][2], Level, 'VAR', 'RECORD', tokens[j][2], None, None))
                     else:
                         SymTab.append(Symbol(tokens[k][2],Level,'VAR',nowType,None,None,None))
             if flag==1:
