@@ -1,8 +1,9 @@
 '''
 构造全局符号表，扫描完一层后删除当前层符号表
-检查当前层内重复定义错误、
+检查当前层内重复定义错误（类型、结构体内部成员、变量）、
 未定义就使用错误、
-函数调用时参数类型及个数的匹配错误
+数组用常数访问时的下标越界错误、
+函数调用时参数类型及个数的匹配错误（考虑到了变量/常数/数组成员/记录成员/记录的数组成员等复杂情况）
 '''
 import LexicalAnalysis as LA
 
@@ -71,10 +72,11 @@ def name2type(name):#用于检查形实参是否匹配
     elif isinstance(name, str) == 1:
         return 'CHAR'
 
-def returnSymItem(name):
-    for Sym in SymTab:
+def returnSymItem(name):#倒着查表以返回最近一次定义的变量
+    for Sym in SymTab[::-1]:
         if Sym.name==name:
             return Sym
+    return None
 
 def outFormat(content):
     if content==None:
@@ -130,22 +132,41 @@ while tokens[i][1]!='EOF':
                         if tokens[k][1]=='INTEGER' and tokens[k-1][1]!='OF':
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
+                                    if tokens[k][2] in recordMemberTab[tokens[j][2]]:
+                                        print("\33[31m第"+str(tokens[k][0])+"行，标识符"+tokens[k][2]+"已经存在于记录"+tokens[j][2]+"的成员列表中，请修改错误后再进行语义分析")
+                                        semanticErrorFlag=1;break
                                     recordMemberTab[tokens[j][2]].update({tokens[k][2]:'INTEGER'})
                                 k+=1
+                            if semanticErrorFlag==1:
+                                break
                         elif tokens[k][1]=='CHAR':
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
+                                    if tokens[k][2] in recordMemberTab[tokens[j][2]]:
+                                        print("\33[31m第"+str(tokens[k][0])+"行，标识符"+tokens[k][2]+"已经存在于记录"+tokens[j][2]+"的成员列表中，请修改错误后再进行语义分析")
+                                        semanticErrorFlag=1;break
                                     recordMemberTab[tokens[j][2]].update({tokens[k][2]:'CHAR'})
                                 k+=1
+                            if semanticErrorFlag==1:
+                                break
                         elif tokens[k][1]=='ARRAY':
                             m=k
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
+                                    if tokens[k][2] in recordMemberTab[tokens[j][2]]:
+                                        print("\33[31m第"+str(tokens[k][0])+"行，标识符"+tokens[k][2]+"已经存在于记录"+tokens[j][2]+"的成员列表中，请修改错误后再进行语义分析")
+                                        semanticErrorFlag=1;break
                                     recordMemberTab[tokens[j][2]].update({tokens[k][2]:('ARRAY',getType(tokens[m+7][2]),tokens[m+2][2],tokens[m+4][2])})
                                 k+=1
+                            if semanticErrorFlag==1:
+                                break
                         k+=1
+                    if semanticErrorFlag==1:
+                        break
                     SymTab.append(Symbol(tokens[j][2], Level, 'TYPE', 'RECORD', None, None, None,None,recordMemberTab[tokens[j][2]]))
         if flag==1:
+            break
+        if semanticErrorFlag==1:
             break
         continue
     elif tokens[i][1]=='VAR':
@@ -214,20 +235,37 @@ while tokens[i][1]!='EOF':
                         if tokens[k][1] == 'INTEGER' and tokens[k - 1][1] != 'OF':
                             while tokens[k][2] != ';':
                                 if tokens[k][1] == 'ID':
+                                    if tokens[k][2] in dictTemp:
+                                        print("\33[31m第"+str(tokens[k][0])+"行，标识符"+tokens[k][2]+"已经存在于当前记录的成员列表中，请修改错误后再进行语义分析")
+                                        semanticErrorFlag=1;break
                                     dictTemp.update({tokens[k][2]: 'INTEGER'})
                                 k += 1;continue
+                            if semanticErrorFlag==1:
+                                break
                         elif tokens[k][1] == 'CHAR':
                             while tokens[k][2] != ';':
                                 if tokens[k][1] == 'ID':
+                                    if tokens[k][2] in dictTemp:
+                                        print("\33[31m第"+str(tokens[k][0])+"行，标识符"+tokens[k][2]+"已经存在于当前记录的成员列表中，请修改错误后再进行语义分析")
+                                        semanticErrorFlag=1;break
                                     dictTemp.update({tokens[k][2]: 'CHAR'})
                                 k += 1;continue
+                            if semanticErrorFlag==1:
+                                break
                         elif tokens[k][1] == 'ARRAY':
                             m = k
                             while tokens[k][2] != ';':
                                 if tokens[k][1] == 'ID':
+                                    if tokens[k][2] in dictTemp:
+                                        print("\33[31m第"+str(tokens[k][0])+"行，标识符"+tokens[k][2]+"已经存在于当前记录的成员列表中，请修改错误后再进行语义分析")
+                                        semanticErrorFlag=1;break
                                     dictTemp.update({tokens[k][2]: ('ARRAY', getType(tokens[m + 7][2]), tokens[m + 2][2], tokens[m + 4][2])})
                                 k += 1;continue
+                            if semanticErrorFlag==1:
+                                break
                         k+=1
+                    if semanticErrorFlag==1:
+                        break
                     k+=1
                     while tokens[k][2]!=';':
                         if tokens[k][1]=='ID':
@@ -243,7 +281,8 @@ while tokens[i][1]!='EOF':
                     j=k+1;continue
 
                 k+=1
-
+            if semanticErrorFlag==1:
+                break
             j=k+1
             if flag==1:
                 break
@@ -255,6 +294,7 @@ while tokens[i][1]!='EOF':
             semanticErrorFlag=1
             print("\33[31m第" + str(tokens[i+1][0]) + "行，过程标识符" + tokens[i+1][2] + "重复定义，请修改错误后再进行语义分析")
             break
+        SymTab.append(Symbol(tokens[i + 1][2], Level, 'PROCEDURE', None, None, None, None, None, None))
         Level += 1
         parameterDict.update({tokens[i+1][2]:[]})
         j=i+3
@@ -273,7 +313,7 @@ while tokens[i][1]!='EOF':
                     SymTab.append(Symbol(tokens[k][2],Level,'VAR',nowType,None,None,None,None,None))
                 k+=1
             j=k+1
-        SymTab.append(Symbol(tokens[i + 1][2], Level, 'PROCEDURE', None, None, None, None, parameterDict[tokens[i+1][2]], None))
+        returnSymItem(tokens[i+1][2]).ParameterDict=parameterDict[tokens[i+1][2]]
         if tokens[j][2]==')':
             i=j+2
         elif tokens[j][2]==';':
@@ -285,28 +325,48 @@ while tokens[i][1]!='EOF':
         #想进行正常语义分析需要保留下行语句，注释掉则可以输出完整符号表
         #delNowLevel(Level)
         Level-=1
-    '''elif tokens[i][1]=='BEGIN':#检查使用有关的错误
+    elif tokens[i][1]=='BEGIN':#检查使用有关的错误
         j = i + 1
         while tokens[j][1]!='END':
             if(tokens[j][1]=='ID'):
-                if '\'' not in tokens[j][2] and judgeDefine(tokens[j][2])==0 and tokens[j-1][2]!='.':
-                    semanticErrorFlag=1
-                    print("\33[31m第"+str(tokens[j][0])+"行，标识符"+tokens[j][2]+"未定义就使用，请修改错误后再继续进行语义分析")
-                    break
+                if '\'' not in tokens[j][2] and judgeDefine(tokens[j][2])==0:
+                    if tokens[j-1][2]!='.':
+                        semanticErrorFlag=1
+                        print("\33[31m第"+str(tokens[j][0])+"行，标识符"+tokens[j][2]+"未定义就使用，请修改错误后再继续进行语义分析")
+                        break
+                    elif tokens[j][2] not in returnSymItem(tokens[j-2][2]).MemberDict:
+                        print("\33[31m第" + str(tokens[j][0]) + "行，记录" + tokens[j-2][2] + "不存在成员" + tokens[j][2] + "，请修改错误后再继续进行语义分析")
+                        semanticErrorFlag = 1;break
                 if tokens[j+1][2]=='[':#检查数组可能的相关错误
-                    if returnSymItem(tokens[j][2]).Up==None and returnSymItem(tokens[j][2]).Low==None:
-                        semanticErrorFlag = 1
-                        print("\33[31m第" + str(tokens[j][0]) + "行，标识符" + str(tokens[j][2]) + "不是数组类型，请修改错误后再继续进行语义分析")
-                        break
+                    tempItem=returnSymItem(tokens[j][2])
+                    Low=Up=0
+                    if tempItem==None:
+                        if returnSymItem(tokens[j-2][2]).type=='RECORD':#记录成员是一个数组
+                            Low=(returnSymItem(tokens[j-2][2]).MemberDict[tokens[j][2]])[2]
+                            Up=(returnSymItem(tokens[j-2][2]).MemberDict[tokens[j][2]])[3]
+                    else:
+                        if tempItem.Up==None and tempItem.Low==None:#常规数组
+                            semanticErrorFlag = 1
+                            print("\33[31m第" + str(tokens[j][0]) + "行，标识符" + str(tokens[j][2]) + "不是数组类型，请修改错误后再继续进行语义分析")
+                            break
+                        Low=returnSymItem(tokens[j][2]).Low
+                        Up=returnSymItem(tokens[j][2]).Up
+                    k=j+2
+                    indexLen=0#只对用CONST访问数组的情况作越界检查
+                    while tokens[k][2]!=']':
+                        indexLen+=1
+                        k+=1
+                    if indexLen>1:
+                        j+=1;continue
                     if tokens[j+2][1]=='ID':#用变量访问数组，直接跳过不作分析
-                        j+=1
-                        continue
-                    if tokens[j+2][2]<returnSymItem(tokens[j][2]).Low or tokens[j+2][2]>returnSymItem(tokens[j][2]).Up:
+                        j+=1;continue
+                    if tokens[j+2][2]<Low or tokens[j+2][2]>Up:
                         semanticErrorFlag = 1
-                        print("\33[31m第"+str(tokens[j+1][0])+"行，数组"+str(tokens[j][2])+"下标越界,请修改错误后再继续进行语义分析")
+                        print("\33[31m第"+str(tokens[j+1][0])+"行，数组"+str(tokens[j][2])+"下标访问越界,请修改错误后再继续进行语义分析")
                         break
-                elif tokens[j+1][2]=='(' and tokens[j][2] in parameterDict:#检查函数调用时参数的匹配问题
+                elif tokens[j+1][2]=='(' and returnSymItem(tokens[j][2]).kind=='PROCEDURE':#检查函数调用时参数的匹配问题
                     realParList=[]
+                    formParList=returnSymItem(tokens[j][2]).ParameterDict
                     k=j+2
                     parmOverFlag=0
                     while tokens[k][2]!=')':#提取实参列表
@@ -316,11 +376,26 @@ while tokens[i][1]!='EOF':
                             if tokens[m+1][2]==';' or tokens[m+1][1]=='END':
                                 parmOverFlag=1
                                 break
-                            if tokens[m][1] == 'ID' and '\'' not in tokens[m][2]:
+                            if tokens[m][1] == 'ID' and '\'' not in tokens[m][2] and tokens[m-1][2]!='.':
                                 if judgeDefine(tokens[m][2]) == 0:
                                     print("\33[31m第" + str(tokens[k][0]) + "行，变量标识符" + tokens[k][2] + "未定义就使用，请修改错误后再继续进行语义分析")
                                     semanticErrorFlag = 1;break
-                            if flag==0 and tokens[m][1] in ['ID','CONST']:#若实参是一个表达式，用第一个变量的类型作为整体类型
+                            if tokens[m+1][2]=='[' and tokens[m-1][2]!='.':#数组变量成员作实参
+                                realParList.append(returnSymItem(tokens[m][2]).ElemType)
+                            elif tokens[m+1][2]=='.':#结构体变量成员变量作实参
+                                if tokens[m+2][2] in returnSymItem(tokens[m][2]).MemberDict:
+                                    tempMember=(returnSymItem(tokens[m][2]).MemberDict)[tokens[m+2][2]]
+                                else:
+                                    tempMember=None
+                                if tempMember==None:
+                                    print("\33[31m第" + str(tokens[m][0]) + "行，记录" + tokens[m][2] + "不存在成员"+tokens[m+2][2]+"，请修改错误后再继续进行语义分析")
+                                    semanticErrorFlag = 1;break
+                                else:
+                                    if type(tempMember)==tuple:
+                                        realParList.append(tempMember[1])
+                                    else:
+                                        realParList.append(tempMember)
+                            elif flag==0 and tokens[m][1] in ['ID','CONST'] and tokens[m-1][2] not in ['[','.']:#若实参是一个表达式，用第一个变量的类型作为整体类型
                                 flag=1
                                 realParList.append(name2type(tokens[m][2]))
                             m+=1
@@ -333,20 +408,22 @@ while tokens[i][1]!='EOF':
                     #print(tokens[j][2]+':'+str(realParList))
                     if semanticErrorFlag==1:
                         break
-                    if realParList!=parameterDict[tokens[j][2]]:
+                    if realParList!=formParList:
                         semanticErrorFlag = 1
-                        if len(realParList)==len(parameterDict):
+                        if len(realParList)==len(formParList):
                             print("\33[31m第" + str(tokens[j][0]) + "行，调用" + str(tokens[j][2]) + "函数时形实参类型不匹配，请修改后再进行语义分析")
                         else:
                             print("\33[31m第" + str(tokens[j][0]) + "行，调用" + str(tokens[j][2]) + "函数时形实参个数不相同，请修改后再进行语义分析")
                         break
                     #j=k+1
                     #continue
+            if semanticErrorFlag == 1:
+                break
             j+=1
         if semanticErrorFlag==1:
             break
         i=j
-        continue'''
+        continue
     i += 1
 
 printSymTab()
