@@ -19,8 +19,6 @@ class Symbol:#符号表元素
         self.ParameterDict=ParameterDict
         self.MemberDict=MemberDict
 
-parameterDict={}#形参表
-
 #print(tokens.obj.txt)
 tokens=LA.startLexAnalysis(LA.codeInput)
 if tokens == None:  # 表明有词法错误
@@ -31,8 +29,6 @@ for i in tokens:
 #print(len(tokens))
 #print(len(scanTokenList))
 SymTab=[]#元素是Sym对象
-recordSym={}#记录表
-recordMemberTab={}#记录别名-成员表，一级索引是记录别名，二级索引是其成员名
 Level=0#当前层数
 
 def redefinition(name,Level):#声明阶段，判断此标识符在当前层是否重复定义
@@ -90,18 +86,6 @@ def printSymTab():
     for i in SymTab:
         print('\33[34m{0:<20}{1:<20}{2:<20}{3:<20}{4:<20}{5:<20}{6:<20}{7:<20}{8:<20}'.format(outFormat(i.name), outFormat(i.level),outFormat(i.kind), outFormat(i.type),outFormat(i.ElemType), outFormat(i.Low),outFormat(i.Up),outFormat(i.ParameterDict),outFormat(i.MemberDict)))
 
-    '''print("\33[31m形参表：\33[34m")
-    for item in parameterDict:
-        print(item + ':', parameterDict[item])
-
-    print("\33[31m记录体变量表：\33[34m")
-    for item in recordSym:
-        print(item + ':', recordSym[item])
-
-    print("\33[31m记录别名-成员表：\33[34m")
-    for item in recordMemberTab:
-        print(item + ':', recordMemberTab[item])'''
-
 semanticErrorFlag=0
 #print('\33[31m')#错误信息用红字输出
 i=0
@@ -126,26 +110,26 @@ while tokens[i][1]!='EOF':
                 elif tokens[j+2][1]!='RECORD':
                     SymTab.append(Symbol(tokens[j][2],Level,'TYPE',getType(tokens[j+2][2]),None,None,None,None,None))
                 else:#记录类型的别名
-                    recordMemberTab.update({tokens[j][2]:{}})
+                    memberDict={}
                     k=j+3
                     while tokens[k][1]!='END':
                         if tokens[k][1]=='INTEGER' and tokens[k-1][1]!='OF':
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
-                                    if tokens[k][2] in recordMemberTab[tokens[j][2]]:
+                                    if tokens[k][2] in memberDict:
                                         print("\33[31m第"+str(tokens[k][0])+"行，标识符"+tokens[k][2]+"已经存在于记录"+tokens[j][2]+"的成员列表中，请修改错误后再进行语义分析")
                                         semanticErrorFlag=1;break
-                                    recordMemberTab[tokens[j][2]].update({tokens[k][2]:'INTEGER'})
+                                    memberDict.update({tokens[k][2]:'INTEGER'})
                                 k+=1
                             if semanticErrorFlag==1:
                                 break
                         elif tokens[k][1]=='CHAR':
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
-                                    if tokens[k][2] in recordMemberTab[tokens[j][2]]:
+                                    if tokens[k][2] in memberDict:
                                         print("\33[31m第"+str(tokens[k][0])+"行，标识符"+tokens[k][2]+"已经存在于记录"+tokens[j][2]+"的成员列表中，请修改错误后再进行语义分析")
                                         semanticErrorFlag=1;break
-                                    recordMemberTab[tokens[j][2]].update({tokens[k][2]:'CHAR'})
+                                    memberDict.update({tokens[k][2]:'CHAR'})
                                 k+=1
                             if semanticErrorFlag==1:
                                 break
@@ -153,17 +137,17 @@ while tokens[i][1]!='EOF':
                             m=k
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
-                                    if tokens[k][2] in recordMemberTab[tokens[j][2]]:
+                                    if tokens[k][2] in memberDict:
                                         print("\33[31m第"+str(tokens[k][0])+"行，标识符"+tokens[k][2]+"已经存在于记录"+tokens[j][2]+"的成员列表中，请修改错误后再进行语义分析")
                                         semanticErrorFlag=1;break
-                                    recordMemberTab[tokens[j][2]].update({tokens[k][2]:('ARRAY',getType(tokens[m+7][2]),tokens[m+2][2],tokens[m+4][2])})
+                                    memberDict.update({tokens[k][2]:('ARRAY',getType(tokens[m+7][2]),tokens[m+2][2],tokens[m+4][2])})
                                 k+=1
                             if semanticErrorFlag==1:
                                 break
                         k+=1
                     if semanticErrorFlag==1:
                         break
-                    SymTab.append(Symbol(tokens[j][2], Level, 'TYPE', 'RECORD', None, None, None,None,recordMemberTab[tokens[j][2]]))
+                    SymTab.append(Symbol(tokens[j][2], Level, 'TYPE', 'RECORD', None, None, None,None,memberDict))
         if flag==1:
             break
         if semanticErrorFlag==1:
@@ -205,8 +189,7 @@ while tokens[i][1]!='EOF':
                             SymTab.append(Symbol(tokens[k][2], Level, 'VAR', 'ARRAY', ElemType, Low, Up,None,None))
                             k+=1;continue
                         elif nowType=='RECORD':#用结构体别名定义结构体变量
-                            SymTab.append(Symbol(tokens[k][2], Level, 'VAR', 'RECORD', tokens[j][2], None, None,None,recordMemberTab[tokens[j][2]]))
-                            recordSym.update({tokens[k][2]: recordMemberTab[tokens[j][2]]})
+                            SymTab.append(Symbol(tokens[k][2], Level, 'VAR', 'RECORD', tokens[j][2], None, None,None,returnSymItem(tokens[j][2]).MemberDict))
                             k += 1;continue
                         else:#常规变量定义
                             if redefinition(tokens[k][2],Level)==1:
@@ -274,7 +257,6 @@ while tokens[i][1]!='EOF':
                                 print("\33[31m第" + str(tokens[k][0]) + "行，记录变量标识符" + tokens[k][2] + "重复定义，请修改错误后再进行语义分析")
                                 break
                             SymTab.append(Symbol(tokens[k][2],Level,'VAR','RECORD',None,None,None,None,dictTemp))
-                            recordSym.update({tokens[k][2]:dictTemp})
                         k+=1
                     if flag==1:
                         break
@@ -296,7 +278,7 @@ while tokens[i][1]!='EOF':
             break
         SymTab.append(Symbol(tokens[i + 1][2], Level, 'PROCEDURE', None, None, None, None, None, None))
         Level += 1
-        parameterDict.update({tokens[i+1][2]:[]})
+        parameterList=[]
         j=i+3
         while tokens[j][2] not in [';',')']:
             nowType = getType(tokens[j][2])
@@ -309,11 +291,11 @@ while tokens[i][1]!='EOF':
             k = j+1
             while tokens[k][2] not in[';',')']:#统计一个类型后面所有的变量
                 if tokens[k][1]=='ID':
-                    parameterDict[tokens[i+1][2]].append(nowType)
+                    parameterList.append(nowType)
                     SymTab.append(Symbol(tokens[k][2],Level,'VAR',nowType,None,None,None,None,None))
                 k+=1
             j=k+1
-        returnSymItem(tokens[i+1][2]).ParameterDict=parameterDict[tokens[i+1][2]]
+        returnSymItem(tokens[i+1][2]).ParameterDict=parameterList
         if tokens[j][2]==')':
             i=j+2
         elif tokens[j][2]==';':
