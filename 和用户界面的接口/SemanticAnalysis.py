@@ -29,6 +29,7 @@ for i in tokens:
 #print(len(scanTokenList))
 SymTab=[]#元素是Sym对象
 recordSym={}#记录表
+recordMemberTab={}#记录别名-成员表，一级索引是记录别名，二级索引是其成员名
 Level=0#当前层数
 lineSkipNum=0
 
@@ -106,24 +107,24 @@ while tokens[i][1]!='EOF':
                     SymTab.append(Symbol(tokens[j][2],Level,'TYPE',getType(tokens[j+2][2]),None,None,None))
                 else:#记录类型的别名
                     SymTab.append(Symbol(tokens[j][2],Level,'TYPE','RECORD',None,None,None))
-                    recordSym.update({tokens[j][2]:{}})
+                    recordMemberTab.update({tokens[j][2]:{}})
                     k=j+3
                     while tokens[k][1]!='END':
                         if tokens[k][1]=='INTEGER' and tokens[k-1][1]!='OF':
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
-                                    recordSym[tokens[j][2]].update({tokens[k][2]:'INTEGER'})
+                                    recordMemberTab[tokens[j][2]].update({tokens[k][2]:'INTEGER'})
                                 k+=1
                         elif tokens[k][1]=='CHAR':
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
-                                    recordSym[tokens[j][2]].update({tokens[k][2]:'CHAR'})
+                                    recordMemberTab[tokens[j][2]].update({tokens[k][2]:'CHAR'})
                                 k+=1
                         elif tokens[k][1]=='ARRAY':
                             m=k
                             while tokens[k][2]!=';':
                                 if tokens[k][1]=='ID':
-                                    recordSym[tokens[j][2]].update({tokens[k][2]:('ARRAY',getType(tokens[m+7][2]),tokens[m+2][2],tokens[m+4][2])})
+                                    recordMemberTab[tokens[j][2]].update({tokens[k][2]:('ARRAY',getType(tokens[m+7][2]),tokens[m+2][2],tokens[m+4][2])})
                                 k+=1
                         k+=1
         if flag==1:
@@ -155,7 +156,7 @@ while tokens[i][1]!='EOF':
                         semanticErrorFlag = 1;flag = 1
                         print("\33[31m第" + str(tokens[k][0]) + "行，标识符" + tokens[k][2] + "重复定义，请修改错误后再进行语义分析")
                         break
-                    if nowType=='ARRAY':
+                    if nowType=='ARRAY':#用数组别名定义数组
                         ElemType=None;Low=None;Up=None
                         for SymItem in SymTab:
                             if SymItem.name==tokens[j][2]:
@@ -163,6 +164,7 @@ while tokens[i][1]!='EOF':
                         SymTab.append(Symbol(tokens[k][2],Level,'VAR','ARRAY',ElemType,Low,Up))
                     elif nowType=='RECORD':
                         SymTab.append(Symbol(tokens[k][2], Level, 'VAR', 'RECORD', tokens[j][2], None, None))
+                        recordSym.update({tokens[k][2]:recordMemberTab[tokens[j][2]]})
                     else:
                         SymTab.append(Symbol(tokens[k][2],Level,'VAR',nowType,None,None,None))
             if flag==1:
@@ -193,7 +195,7 @@ while tokens[i][1]!='EOF':
         Level += 1
         parameterDict.update({tokens[i+1][2]:[]})
         j=i+3
-        while tokens[j][2]!=';':
+        while tokens[j][2] not in [';',')']:
             nowType = getType(tokens[j][2])
             if nowType==None:
                 if tokens[j][1]=='VAR':
@@ -201,14 +203,17 @@ while tokens[i][1]!='EOF':
                     continue
                 print("\33[31m第" + str(tokens[j][0]) + "行，类型标识符" + tokens[j][2] + "未定义，请修改错误后再进行语义分析")
                 semanticErrorFlag=1;break
-            k = j
+            k = j+1
             while tokens[k][2] not in[';',')']:#统计一个类型后面所有的变量
                 if tokens[k][1]=='ID':
                     parameterDict[tokens[i+1][2]].append(nowType)
                     SymTab.append(Symbol(tokens[k][2],Level,'VAR',nowType,None,None,None))
                 k+=1
             j=k+1
-        i=j+1
+        if tokens[j][2]==')':
+            i=j+2
+        elif tokens[j][2]==';':
+            i=j+1
         if semanticErrorFlag==1:
             break
         continue
@@ -260,15 +265,15 @@ while tokens[i][1]!='EOF':
                             break
                         if parmOverFlag==1:
                             break
-                    #print(realParList)
+                    #print(tokens[j][2]+':'+str(realParList))
                     if semanticErrorFlag==1:
                         break
                     if realParList!=parameterDict[tokens[j][2]]:
                         semanticErrorFlag = 1
                         if len(realParList)==len(parameterDict):
-                            print("\33[31m第" + str(tokens[j][0]) + "行，调用" + str(tokens[j][2]) + "函数时形实参个数不相同，请修改后再进行语义分析")
-                        else:
                             print("\33[31m第" + str(tokens[j][0]) + "行，调用" + str(tokens[j][2]) + "函数时形实参类型不匹配，请修改后再进行语义分析")
+                        else:
+                            print("\33[31m第" + str(tokens[j][0]) + "行，调用" + str(tokens[j][2]) + "函数时形实参个数不相同，请修改后再进行语义分析")
                         break
                     #j=k+1
                     #continue
@@ -288,7 +293,12 @@ print("\33[31m形参表：\33[34m")
 print(parameterDict)
 
 print("\33[31m记录表：\33[34m")
-print(recordSym)
+for item in recordSym:
+    print(item+':',recordSym[item])
+
+print("\33[31m记录别名-成员表：\33[34m")
+for item in recordMemberTab:
+    print(item+':',recordMemberTab[item])
 
 if semanticErrorFlag==0:
     print("\33[32m无语义错误")
