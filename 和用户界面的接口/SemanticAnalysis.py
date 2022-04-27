@@ -320,6 +320,11 @@ while tokens[i][1]!='EOF':
                     elif tokens[j][2] not in returnSymItem(tokens[j-2][2]).MemberDict:
                         print("\33[31m第" + str(tokens[j][0]) + "行，记录" + tokens[j-2][2] + "不存在成员" + tokens[j][2] + "，请修改错误后再继续进行语义分析")
                         semanticErrorFlag = 1;break
+                if tokens[j+1][2]=='.':
+                    item=returnSymItem(tokens[j][2])
+                    if item.type!='RECORD':
+                        print("\33[31m第" + str(tokens[j][0]) + "行，标识符" + tokens[j][2] + "不是记录体变量，请修改错误后再继续进行语义分析")
+                        semanticErrorFlag = 1;break
                 if tokens[j+1][2]=='[':#检查数组可能的相关错误
                     tempItem=returnSymItem(tokens[j][2])
                     Low=Up=0
@@ -373,6 +378,10 @@ while tokens[i][1]!='EOF':
                                     semanticErrorFlag = 1;break
                                 realParList.append(returnSymItem(tokens[m][2]).ElemType)
                             elif tokens[m+1][2]=='.':#结构体变量成员变量作实参
+                                item=returnSymItem(tokens[m][2])
+                                if item.type!='RECORD':
+                                    print("\33[31m第" + str(tokens[m][0]) + "行，标识符" + tokens[m][2] + "不是记录体变量，请修改错误后再继续进行语义分析")
+                                    semanticErrorFlag = 1;break
                                 if tokens[m+2][2] in returnSymItem(tokens[m][2]).MemberDict:
                                     tempMember=(returnSymItem(tokens[m][2]).MemberDict)[tokens[m+2][2]]
                                 else:
@@ -395,7 +404,7 @@ while tokens[i][1]!='EOF':
                         if parmOverFlag==1:
                             break
                     #输出实参表
-                    #print(tokens[j][2]+':'+str(realParList))
+                    print(tokens[j][2]+':'+str(realParList))
                     if semanticErrorFlag==1:
                         break
                     if realParList!=formParList:
