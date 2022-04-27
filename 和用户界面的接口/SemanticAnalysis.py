@@ -1,6 +1,7 @@
 '''
 构造全局符号表，扫描完一层后删除当前层符号表
 检查当前层内重复定义错误（类型、结构体内部成员、变量）、
+a[x]/r.a[x]中a是不是数组，r是不是结构体、
 未定义就使用错误、
 数组用常数访问时的下标越界错误、
 函数调用时参数类型及个数的匹配错误（考虑到了变量/常数/数组成员/记录成员/记录的数组成员等复杂情况）
@@ -344,9 +345,12 @@ while tokens[i][1]!='EOF':
                         j+=1;continue
                     if tokens[j+2][2]<Low or tokens[j+2][2]>Up:
                         semanticErrorFlag = 1
-                        print("\33[31m第"+str(tokens[j+1][0])+"行，数组"+str(tokens[j][2])+"下标访问越界,请修改错误后再继续进行语义分析")
+                        print("\33[31m第"+str(tokens[j+1][0])+"行，数组"+str(tokens[j][2])+"下标访问越界，请修改错误后再继续进行语义分析")
                         break
-                elif tokens[j+1][2]=='(' and returnSymItem(tokens[j][2]).kind=='PROCEDURE':#检查函数调用时参数的匹配问题
+                elif tokens[j+1][2]=='(':#检查函数调用时参数的匹配问题
+                    if returnSymItem(tokens[j][2]).kind!='PROCEDURE':
+                        print("\33[31m第"+str(tokens[j][0])+"行，标识符"+str(tokens[j][2])+"不是过程标识符，请修改错误后再继续进行语义分析")
+                        semanticErrorFlag=1;break
                     realParList=[]
                     formParList=returnSymItem(tokens[j][2]).ParameterDict
                     k=j+2
@@ -363,6 +367,10 @@ while tokens[i][1]!='EOF':
                                     print("\33[31m第" + str(tokens[k][0]) + "行，变量标识符" + tokens[k][2] + "未定义就使用，请修改错误后再继续进行语义分析")
                                     semanticErrorFlag = 1;break
                             if tokens[m+1][2]=='[' and tokens[m-1][2]!='.':#数组变量成员作实参
+                                item=returnSymItem(tokens[m][2])
+                                if item.type!='ARRAY':
+                                    print("\33[31m第" + str(tokens[m][0]) + "行，标识符" + tokens[m][2] + "不是数组类型，请修改错误后再继续进行语义分析")
+                                    semanticErrorFlag = 1;break
                                 realParList.append(returnSymItem(tokens[m][2]).ElemType)
                             elif tokens[m+1][2]=='.':#结构体变量成员变量作实参
                                 if tokens[m+2][2] in returnSymItem(tokens[m][2]).MemberDict:
