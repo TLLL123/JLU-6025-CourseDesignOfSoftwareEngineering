@@ -96,13 +96,22 @@ class SemanticChecker:  # 功能 5, 6, 7, 10, 11, 12
                 i = self.idx + 2
                 while self.tokenlist[i][1] not in ['ID', 'CONST']:
                     i += 1
-                if self.tokenlist[i][1] == 'CONST' \
-                        or self.getType(self.tokenlist[i][2]) == 'INTEGER':
-                    return
-            message = "数组变量下标类型不合法 In line {a}, \"{b}\""\
-                .format(a=self.tokenlist[self.idx][0], b=self.tokenlist[self.idx][2])
-            self.errorlist.append(message)
-            # raise SemanticError(message, self.tokenlist[self.idx][0])
+                if self.tokenlist[i][1] != 'CONST' \
+                        and self.getType(self.tokenlist[i][2]) != 'INTEGER':
+                    message = "数组变量下标类型不合法 In line {a}, \"{b}\"" \
+                        .format(a=self.tokenlist[self.idx][0], b=self.tokenlist[self.idx][2])
+                    self.errorlist.append(message)
+                return
+            left = None
+            i = self.idx - 1
+            while self.tokenlist[i][2] not in ['begin', 'then', 'else', ';', 'do']:
+                if self.tokenlist[i][1] == 'ID':
+                    left = self.tokenlist[i][2]
+                i -= 1
+            if self.getKind(left) != 'PROCEDURE':
+                message = "数组变量引用不合法 In line {a}, \"{b}\"" \
+                    .format(a=self.tokenlist[self.idx][0], b=self.tokenlist[self.idx][2])
+                self.errorlist.append(message)
 
     def checkRecordMember(self):
         if self.tokenlist[self.idx + 1][2] == '.' \
@@ -112,55 +121,58 @@ class SemanticChecker:  # 功能 5, 6, 7, 10, 11, 12
             self.errorlist.append(message)
             return
         if self.getType(self.tokenlist[self.idx][2]) == 'RECORD':
-            if self.tokenlist[self.idx + 1][2] != '.':
-                message = "记录体结构引用不合法 In line {a}, \"{b}\""\
-                    .format(a=self.tokenlist[self.idx][0], b=self.tokenlist[self.idx][2])
-                self.errorlist.append(message)
-                return
-                # raise SemanticError(message, self.tokenlist[self.idx][0])
-            dic = self.getRecordDict(self.tokenlist[self.idx][2])
-            if self.tokenlist[self.idx + 2][2] not in dic.keys():
-                message = "记录体结构域成员变量未定义 In line {a}, \"{b}\""\
-                    .format(a=self.tokenlist[self.idx + 2][0], b=self.tokenlist[self.idx + 2][2])
-                self.errorlist.append(message)
-                return
-                # raise SemanticError(message, self.tokenlist[self.idx + 2][0])
-            type = dic[self.tokenlist[self.idx + 2][2]]
-            if isinstance(type, tuple):
-                if self.tokenlist[self.idx + 3][2] != '[':
-                    message = "数组变量引用不合法 In line {a}, \"{b}\""\
+            left = None
+            i = self.idx - 1
+            while self.tokenlist[i][2] not in ['begin', 'then', 'else', ';', 'do']:
+                if self.tokenlist[i][1] == 'ID':
+                    left = self.tokenlist[i][2]
+                i -= 1
+            if self.tokenlist[self.idx + 1][2] == '.':
+                dic = self.getRecordDict(self.tokenlist[self.idx][2])
+                if self.tokenlist[self.idx + 2][2] not in dic.keys():
+                    message = "记录体结构域成员变量未定义 In line {a}, \"{b}\"" \
                         .format(a=self.tokenlist[self.idx + 2][0], b=self.tokenlist[self.idx + 2][2])
                     self.errorlist.append(message)
                     return
                     # raise SemanticError(message, self.tokenlist[self.idx + 2][0])
-                if self.tokenlist[self.idx + 4][1] == 'CONST' \
-                        and self.tokenlist[self.idx + 5][2] == ']':
-                    if type[2] <= self.tokenlist[self.idx + 4][2] <= type[3]:
+                type = dic[self.tokenlist[self.idx + 2][2]]
+                if isinstance(type, tuple):
+                    if self.tokenlist[self.idx + 3][2] == '[':
+                        if self.tokenlist[self.idx + 4][1] == 'CONST' \
+                                and self.tokenlist[self.idx + 5][2] == ']':
+                            if type[2] <= self.tokenlist[self.idx + 4][2] <= type[3]:
+                                return
+                            message = "数组变量下标越界 In line {a}, \"{b}\"" \
+                                .format(a=self.tokenlist[self.idx + 4][0], b=self.tokenlist[self.idx + 4][2])
+                            self.errorlist.append(message)
+                            return
+                        if self.tokenlist[self.idx + 4][2] == '(' \
+                                and self.tokenlist[self.idx + 5][1] == 'CONST' \
+                                and self.tokenlist[self.idx + 7][2] == ']':
+                            if type[2] <= self.tokenlist[self.idx + 5][2] <= type[3]:
+                                return
+                            message = "数组变量下标越界 In line {a}, \"{b}\"" \
+                                .format(a=self.tokenlist[self.idx + 5][0], b=self.tokenlist[self.idx + 5][2])
+                            self.errorlist.append(message)
+                            return
+                        i = self.idx + 4
+                        while self.tokenlist[i][1] not in ['ID', 'CONST']:
+                            i += 1
+                        if self.tokenlist[i][1] != 'CONST' \
+                                and self.getType(self.tokenlist[i][2]) != 'INTEGER':
+                            message = "数组变量下标类型不合法 In line {a}, \"{b}\"" \
+                                .format(a=self.tokenlist[self.idx + 2][0], b=self.tokenlist[self.idx + 2][2])
+                            self.errorlist.append(message)
                         return
-                    message = "数组变量下标越界 In line {a}, \"{b}\""\
-                        .format(a=self.tokenlist[self.idx + 4][0], b=self.tokenlist[self.idx + 4][2])
-                    self.errorlist.append(message)
-                    return
-                    # raise SemanticError(message, self.tokenlist[self.idx + 4][0])
-                if self.tokenlist[self.idx + 4][2] == '(' \
-                        and self.tokenlist[self.idx + 5][1] == 'CONST' \
-                        and self.tokenlist[self.idx + 7][2] == ']':
-                    if type[2] <= self.tokenlist[self.idx + 5][2] <= type[3]:
-                        return
-                    message = "数组变量下标越界 In line {a}, \"{b}\""\
-                        .format(a=self.tokenlist[self.idx + 5][0], b=self.tokenlist[self.idx + 5][2])
-                    self.errorlist.append(message)
-                    return
-                i = self.idx + 4
-                while self.tokenlist[i][1] not in ['ID', 'CONST']:
-                    i += 1
-                if self.tokenlist[i][1] == 'CONST' \
-                        or self.getType(self.tokenlist[i][2]) == 'INTEGER':
-                    return
-                message = "数组变量下标类型不合法 In line {a}, \"{b}\""\
-                    .format(a=self.tokenlist[self.idx + 2][0], b=self.tokenlist[self.idx + 2][2])
+                    if self.getKind(left) != 'PROCEDURE':
+                        message = "数组变量引用不合法 In line {a}, \"{b}\"" \
+                            .format(a=self.tokenlist[self.idx + 2][0], b=self.tokenlist[self.idx + 2][2])
+                        self.errorlist.append(message)
+                return
+            if self.getKind(left) != 'PROCEDURE':
+                message = "记录体结构引用不合法 In line {a}, \"{b}\"" \
+                    .format(a=self.tokenlist[self.idx][0], b=self.tokenlist[self.idx][2])
                 self.errorlist.append(message)
-                # raise SemanticError(message, self.tokenlist[self.idx + 2][0])
 
     def checkProcedureCall(self):
         if self.tokenlist[self.idx + 1][2] != '(' \
