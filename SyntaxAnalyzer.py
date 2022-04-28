@@ -1,81 +1,145 @@
+"""
+Top-down parsing
+"""
 from graphviz import Digraph
 from utils import FormatTransformer
 
 
 class SyntaxError(Exception):
+    """
+    自定义语法错误异常
+    """
     def __init__(self, message, status):
+        """
+        语法错误信息
+            message:错误具体信息
+            status：状态，默认-1
+        """
         super().__init__(message, status)
         self.message = message
         self.status = status
 
 
 class TreeNode:
-
+    """
+    定义语法树节点
+    """
     def __init__(self):
+        """
+        语法树节点结构
+            child：list[] 语法树子节点，上下层关系
+            sibling：TreeNode 语法树兄弟节点，平级关系
+            lineno：int 行号
+            nodekind：str 节点名
+            kind：class 类型信息
+            name：list[str] 变量标识符表
+            type_name：list[] 类型标识符表
+            attr：class 属性信息
+        """
         self.child = [None] * 3
         self.sibling = None
         self.lineno = None
-        self.label = ""
+        self.nodekind = ""
         self.kind = self.kind()
-        # self.idnum = None
         self.name = []
-        # self.table = []
         self.type_name = [None]
         self.attr = self.attr()
 
     class kind:
+        """
+        类型信息
+        """
         def __init__(self):
+            """
+            dec：声明类型
+            stmt：语句类型
+            exp：表达式类型
+            """
             self.dec = None
             self.stmt = None
             self.exp = None
 
     class attr:
+        """
+        属性信息
+        """
         def __init__(self):
+            """
+            ArrayAttr：数组属性
+            ProcAttr：过程体属性
+            ExpAttr：表达式属性
+            """
             self.ArrayAttr = self.ArrayAttr()
             self.ProcAttr = self.ProcAttr()
             self.ExpAttr = self.ExpAttr()
 
         class ArrayAttr:
             def __init__(self):
+                """
+                low：下标
+                low：上标
+                childType：数组成员类型
+                """
                 self.low = None
-                self.up = None
+                self.low = None
                 self.childType = None
 
         class ProcAttr:
             def __init__(self):
+                """
+                paramt：参数属性（值参，变参）
+                """
                 self.paramt = None
 
         class ExpAttr:
             def __init__(self):
+                """
+                op：运算操作符
+                val：常数值
+                varkind：变量类别
+                """
                 self.op = None
                 self.val = None
                 self.varkind = None
-                self.type = None
 
 
 class Parser:
-    def __init__(self, tokenlist, idx=0, view=False):
+    def __init__(self, tokenlist, idx=0):
         self.tokenlist = tokenlist
         self.idx = idx
         self.temp_name = None
 
     def match(self, terminator):
+        """
+        匹配终极符
+        """
         if self.tokenlist[self.idx][2] != terminator:
-            # raise SyntaxError("Syntax Error detected at line {}".format(self.tokenlist[self.idx][0]), -1)
             self.syntaxError()
         self.idx += 1
         return
 
     def syntaxError(self, message=None):
-        if message:
-            raise SyntaxError(message, -1)
-        else:
-            raise SyntaxError(
-                'Syntax Error detected at line {}, near "{}"'.format(
-                    self.tokenlist[self.idx][0], self.tokenlist[self.idx][2]), -1)
-            # raise SyntaxError(self.tokenlist[self.idx], -1)
+        """
+        显示错误信息
+        """
+        # if message:
+        #     raise SyntaxError(message, -1)
+        # else:
+        #     raise SyntaxError(
+        #         'Syntax Error detected at line {}, "{}"'.format(
+        #             self.tokenlist[self.idx][0], self.tokenlist[self.idx][2]), -1)
+        message = 'Syntax Error detected at line {}, "{}"'.format(
+            self.tokenlist[self.idx][0], self.tokenlist[self.idx][2])
+        print('\033[1;31;40m')
+        print('\033[7;31m{}\033[1;31;40m'.format(message))
+        print('\033[0m')
+        exit(0)
 
     def parse(self) -> TreeNode:
+        """
+        解析入口
+            return：TreeNode 合法语法树根节点
+        """
         root = self.Program()
         self.match("EOF")
         return root
@@ -83,7 +147,7 @@ class Parser:
     def Program(self) -> TreeNode:
         if 'PROGRAM' == self.tokenlist[self.idx][2]:
             root = TreeNode()
-            root.label = "ProK"
+            root.nodekind = "ProK"
             root.child[0] = self.ProgramHead()
             root.child[1] = self.DeclarePart()
             root.child[2] = self.ProgramBody()
@@ -96,7 +160,7 @@ class Parser:
     def ProgramHead(self) -> TreeNode:
         if 'PROGRAM' == self.tokenlist[self.idx][2]:
             t = TreeNode()
-            t.label = "PheadK"
+            t.nodekind = "PheadK"
             self.match("PROGRAM")
             if 'ID' == self.tokenlist[self.idx][1]:
                 t.name.append(self.tokenlist[self.idx][2])
@@ -107,14 +171,16 @@ class Parser:
     def DeclarePart(self) -> TreeNode:
         if self.tokenlist[self.idx][2] in ['PROCEDURE', 'TYPE', 'VAR', 'BEGIN']:
             typeP = TreeNode()
-            typeP.label = "TypeK"
+            typeP.nodekind = "TypeK"
             typeP.child[0] = self.TypeDec()
             varP = TreeNode()
-            varP.label = "VarK"
+            varP.nodekind = "VarK"
             varP.child[0] = self.VarDec()
-            s = self.ProcDec()
-            if s:
-                s.label = "ProcK"
+            s = TreeNode()
+            s.nodekind = "ProcDecK"
+            s.child[0] = self.ProcDec()
+            if not s.child[0]:
+                s = None
             if not varP.child[0]:
                 varP = s
             if not typeP.child[0]:
@@ -145,11 +211,11 @@ class Parser:
     def TypeDecList(self) -> TreeNode:
         if self.tokenlist[self.idx][1] == 'ID':
             t = TreeNode()
+            t.nodekind = "DecK"
             self.TypeId(t)
             self.match("=")
             self.TypeName(t)
             self.match(";")
-            #
             p = self.TypeDecMore()
             if p:
                 t.sibling = p
@@ -233,6 +299,7 @@ class Parser:
 
     def FieldDecList(self) -> TreeNode:
         t = TreeNode()
+        t.nodekind = "DecK"
         if self.tokenlist[self.idx][2] in ['INTEGER', 'CHAR']:
             self.BaseType(t)
         elif self.tokenlist[self.idx][2] in ['ARRAY']:
@@ -289,6 +356,7 @@ class Parser:
         if self.tokenlist[self.idx][2] in ['ARRAY', 'INTEGER', 'RECORD', 'CHAR'] \
                 or self.tokenlist[self.idx][1] == 'ID':
             t = TreeNode()
+            t.nodekind = "DecK"
             self.TypeName(t)
             self.VarIdList(t)
             self.match(";")
@@ -336,6 +404,7 @@ class Parser:
             self.match("PROCEDURE")
             if self.tokenlist[self.idx][1] == 'ID':
                 t = TreeNode()
+                t.nodekind = "DecK"
                 t.name.append(self.tokenlist[self.idx][2])
                 self.idx += 1
                 self.match("(")
@@ -386,6 +455,7 @@ class Parser:
 
     def Param(self) -> TreeNode:
         t = TreeNode()
+        t.nodekind = "DecK"
         if self.tokenlist[self.idx][2] in ['CHAR', 'INTEGER', 'RECORD', 'ARRAY'] \
                 or self.tokenlist[self.idx][1] == 'ID':
             t.attr.ProcAttr.paramt = "valparamType"
@@ -431,7 +501,7 @@ class Parser:
         if self.tokenlist[self.idx][2] in ['BEGIN']:
             self.match("BEGIN")
             t = TreeNode()
-            t.label = "ProgramBody"
+            t.nodekind = "StmLK"
             t.child[0] = self.StmList()
             self.match("END")
             return t
@@ -442,6 +512,7 @@ class Parser:
         if self.tokenlist[self.idx][2] in ['WHILE', 'RETURN', 'IF', 'READ', 'WRITE'] \
                 or self.tokenlist[self.idx][1] == 'ID':
             t = self.Stm()
+            t.nodekind = "StmtK"
             p = self.StmMore()
             t.sibling = p
             return t
@@ -486,6 +557,7 @@ class Parser:
     def AssignmentRest(self) -> TreeNode:
         if self.tokenlist[self.idx][2] in ['.', ':=', '[']:
             t = TreeNode()
+            t.kind.stmt = "AssignK"
             self.VariMore(t)
             self.match(":=")
             t.child[0] = self.Exp()
@@ -500,7 +572,7 @@ class Parser:
             self.match("(")
             if self.tokenlist[self.idx][1] == 'ID':
                 t = TreeNode()
-                t.label = "InputStm"
+                t.kind.stmt = "ReadK"
                 t.name.append(self.tokenlist[self.idx][2])
                 self.idx += 1
                 self.match(")")
@@ -512,7 +584,7 @@ class Parser:
             self.match("WRITE")
             self.match("(")
             t = TreeNode()
-            t.label = "OutputStm"
+            t.kind.stmt = "WriteK"
             t.child[0] = self.Exp()
             self.match(")")
             return t
@@ -524,7 +596,7 @@ class Parser:
             self.match("RETURN")
             self.match("(")
             t = TreeNode()
-            t.label = "ReturnStm"
+            t.kind.stmt = "ReturnStm"
             t.child[0] = self.Exp()
             self.match(")")
             return t
@@ -535,6 +607,7 @@ class Parser:
         if self.tokenlist[self.idx][2] in ['(']:
             self.match("(")
             t = TreeNode()
+            t.nodekind = "CallK"
             t.child[0] = self.ActParamList()
             t.name.append(self.temp_name)
             self.match(")")
@@ -565,6 +638,8 @@ class Parser:
     def Factor(self) -> TreeNode:
         if self.tokenlist[self.idx][1] == 'CONST':
             t = TreeNode()
+            t.nodekind = "ExpK"
+            t.kind.exp = "ConstK"
             t.attr.ExpAttr.val = int(self.tokenlist[self.idx][2])
             self.idx += 1
             return t
@@ -581,6 +656,8 @@ class Parser:
     def Variable(self) -> TreeNode:
         if self.tokenlist[self.idx][1] == 'ID':
             t = TreeNode()
+            t.nodekind = "ExpK"
+            t.kind.exp = "IdK"
             t.name.append(self.tokenlist[self.idx][2])
             t.lineno = self.tokenlist[self.idx][0]
             self.idx += 1
@@ -608,7 +685,9 @@ class Parser:
 
     def FieldVar(self) -> TreeNode:
         if self.tokenlist[self.idx][1] == 'ID':
-            t =TreeNode()
+            t = TreeNode()
+            t.nodekind = "ExpK"
+            t.kind.exp = "IdK"
             t.name.append(self.tokenlist[self.idx][2])
             t.lineno = self.tokenlist[self.idx][0]
             self.idx += 1
@@ -633,7 +712,7 @@ class Parser:
         if self.tokenlist[self.idx][2] in ['IF']:
             self.match("IF")
             t = TreeNode()
-            t.label = "ConditionalStm"
+            t.kind.stmt = "IfK"
             t.child[0] = self.RelExp()
             self.match("THEN")
             t.child[1] = self.StmList()
@@ -648,7 +727,7 @@ class Parser:
         if self.tokenlist[self.idx][2] in ['WHILE']:
             self.match("WHILE")
             t = TreeNode()
-            t.label = "LoopStm"
+            t.kind.stmt = "WhileK"
             t.child[0] = self.RelExp()
             self.match("DO")
             t.child[1] = self.StmList()
@@ -661,6 +740,7 @@ class Parser:
         if self.tokenlist[self.idx][2] in ['('] \
                 or self.tokenlist[self.idx][1] in ['ID', 'CONST']:
             t = TreeNode()
+            t.nodekind = "ExpK"
             t.child[0] = self.Exp()
             self.OtherRelE(t)
             return t
@@ -677,9 +757,11 @@ class Parser:
     def CmpOp(self, TreeNode):
         if self.tokenlist[self.idx][2] in ['<']:
             TreeNode.attr.ExpAttr.op = self.tokenlist[self.idx][2]
+            TreeNode.kind.exp = "OpK"
             self.match("<")
         elif self.tokenlist[self.idx][2] in ['=']:
             TreeNode.attr.ExpAttr.op = self.tokenlist[self.idx][2]
+            TreeNode.kind.exp = "OpK"
             self.match("=")
         else:
             self.syntaxError()
@@ -688,6 +770,7 @@ class Parser:
         if self.tokenlist[self.idx][2] in ['('] \
                 or self.tokenlist[self.idx][1] in ['ID', 'CONST']:
             t = TreeNode()
+            t.nodekind = "ExpK"
             t.child[0] = self.Term()
             t = self.OtherTerm(t)
             return t
@@ -707,9 +790,11 @@ class Parser:
     def AddOp(self, TreeNode):
         if self.tokenlist[self.idx][2] in ['+']:
             TreeNode.attr.ExpAttr.op = self.tokenlist[self.idx][2]
+            TreeNode.kind.exp = "OpK"
             self.match("+")
         elif self.tokenlist[self.idx][2] in ['-']:
             TreeNode.attr.ExpAttr.op = self.tokenlist[self.idx][2]
+            TreeNode.kind.exp = "OpK"
             self.match("-")
         else:
             self.syntaxError()
@@ -718,6 +803,7 @@ class Parser:
         if self.tokenlist[self.idx][2] in ['('] \
                 or self.tokenlist[self.idx][1] in ['ID', 'CONST']:
             t = TreeNode()
+            t.nodekind = "ExpK"
             t.child[0] = self.Factor()
             t = self.OtherFactor(t)
             return t
@@ -738,27 +824,38 @@ class Parser:
     def MultOp(self, TreeNode):
         if self.tokenlist[self.idx][2] in ['*']:
             TreeNode.attr.ExpAttr.op = self.tokenlist[self.idx][2]
+            TreeNode.kind.exp = "OpK"
             self.match("*")
         elif self.tokenlist[self.idx][2] in ['/']:
             TreeNode.attr.ExpAttr.op = self.tokenlist[self.idx][2]
+            TreeNode.kind.exp = "OpK"
             self.match("/")
         else:
             self.syntaxError()
 
 
 def ToStr(list):
+    """
+    列表转不带引号的字符串
+    :param list: list[str]
+    :return: str
+    """
     s = ''
     for l in list[:-1]:
         s = s + str(l) + ","
     s += list[-1]
     return s
 
+
 def decode(node):
-    if not node:
-        raise "node为空"
+    """
+    解码树节点信息，输出信息串
+    :param node: class 语法树节点
+    :return: str
+    """
     label = ''
-    if node.label != "":
-        label = node.label + "\n"
+    if node.nodekind != "":
+        label = node.nodekind + "\n"
     if len(node.name) > 0:
         label = label + "ID=" + ToStr(node.name) + "\n"
     if node.type_name != [None]:
@@ -784,30 +881,25 @@ def decode(node):
         label = label + "ExpAttr.val=" + str(node.attr.ExpAttr.val) + "\n"
     if node.attr.ExpAttr.varkind:
         label = label + "ExpAttr.varkind=" + node.attr.ExpAttr.varkind + "\n"
-    if node.attr.ExpAttr.type:
-        label = label + "ExpAttr.type=" + node.attr.ExpAttr.type + "\n"
     return label
 
 
 def drawTree(graph, node):
-    # if not node:
-    #     return
-    # print(decode(node))
-    # print(id(node))
+    """
+    绘制语法树
+    :param node: 语法树节点
+    :return: None
+    """
     for i in range(3):
         if node.child[i]:
             graph.node(name=str(id(node.child[i])), label=decode(node.child[i]))
-            # graph.node(name=str(random.randint(1, 10000)), label=decode(node.child[i]))
             xlabel = 'child[{}]'.format(i)
             graph.edge(tail_name=str(id(node)), head_name=str(id(node.child[i])), xlabel=xlabel, color='red')
             drawTree(graph, node.child[i])
     if node.sibling:
-        # graph.node(name=str(id(node.sibling)), label=decode(node.sibling))
-        # graph.node(name=str(random.randint(1, 10000)), label=decode(node.sibling))
         with graph.subgraph() as s:
             # s.attr(rank='same')
             graph.node(name=str(id(node.sibling)), label=decode(node.sibling))
-            # s.edge(tail_name=str(id(node)), head_name=str(id(node.sibling)), constraint='false')
             s.edge(tail_name=str(id(node)), head_name=str(id(node.sibling)), xlabel="brother", color='blue')
         # graph.edge(tail_name=str(id(node)), head_name=str(id(node.sibling)))
         drawTree(graph, node.sibling)
@@ -820,7 +912,7 @@ if __name__ == '__main__':
     tokenlist2 = [(1, 'PROGRAM', 'Program'), (1, 'ID', 'p'), (2, 'TYPE', 'type'), (2, 'ID', 't'), (2, 'EQ', '='), (2, 'INTEGER', 'integer'), (2, 'SEMI', ';'), (3, 'ID', 't1'), (3, 'EQ', '='), (3, 'CHAR', 'char'), (3, 'SEMI', ';'), (4, 'ID', 't2'), (4, 'EQ', '='), (4, 'RECORD', 'record'), (5, 'INTEGER', 'integer'), (5, 'ID', 'e1'), (5, 'COMMA', ','), (5, 'ID', 'e2'), (5, 'SEMI', ';'), (6, 'CHAR', 'char'), (6, 'ID', 'f1'), (6, 'COMMA', ','), (6, 'ID', 'f2'), (6, 'SEMI', ';'), (7, 'ARRAY', 'array'), (7, 'LPAREN', '['), (7, 'CONST', 1), (7, 'UNDERANGE', '..'), (7, 'CONST', 5), (7, 'RPAREN', ']'), (7, 'OF', 'of'), (7, 'INTEGER', 'integer'), (7, 'ID', 'g1'), (7, 'COMMA', ','), (7, 'ID', 'g2'), (7, 'SEMI', ';'), (8, 'END', 'end'), (8, 'SEMI', ';'), (9, 'VAR', 'var'), (9, 'ID', 't'), (9, 'ID', 'v1'), (9, 'COMMA', ','), (9, 'ID', 'v2'), (9, 'COMMA', ','), (9, 'ID', 'v3'), (9, 'SEMI', ';'), (10, 'ID', 't1'), (10, 'ID', 'v4'), (10, 'SEMI', ';'), (11, 'ARRAY', 'array'), (11, 'LPAREN', '['), (11, 'CONST', 1), (11, 'UNDERANGE', '..'), (11, 'CONST', 20), (11, 'RPAREN', ']'), (11, 'OF', 'of'), (11, 'INTEGER', 'integer'), (11, 'ID', 'a'), (11, 'COMMA', ','), (11, 'ID', 'b'), (11, 'COMMA', ','), (11, 'ID', 'c'), (11, 'SEMI', ';'), (13, 'PROCEDURE', 'procedure'), (13, 'ID', 'v1Add'), (13, 'LMIDPAREN', '('), (13, 'ID', 't'), (13, 'ID', 'v1'), (13, 'RMIDPAREN', ')'), (13, 'SEMI', ';'), (14, 'VAR', 'var'), (14, 'INTEGER', 'integer'), (14, 'ID', 'temp1'), (14, 'SEMI', ';'), (15, 'BEGIN', 'begin'), (16, 'ID', 'temp1'), (16, 'ASSIGN', ':='), (16, 'CONST', 10), (16, 'SEMI', ';'), (17, 'ID', 'v1'), (17, 'ASSIGN', ':='), (17, 'ID', 'v1'), (17, 'PLUS', '+'), (17, 'ID', 'temp1'), (17, 'SEMI', ';'), (18, 'WRITE', 'write'), (18, 'LMIDPAREN', '('), (18, 'ID', 'v1'), (18, 'RMIDPAREN', ')'), (19, 'END', 'end'), (21, 'PROCEDURE', 'procedure'), (21, 'ID', 'v2Dec'), (21, 'LMIDPAREN', '('), (21, 'INTEGER', 'integer'), (21, 'ID', 'v2'), (21, 'RMIDPAREN', ')'), (21, 'SEMI', ';'), (22, 'VAR', 'var'), (22, 'INTEGER', 'integer'), (22, 'ID', 'temp2'), (22, 'SEMI', ';'), (23, 'BEGIN', 'begin'), (24, 'ID', 'temp2'), (24, 'ASSIGN', ':='), (24, 'CONST', 10), (24, 'SEMI', ';'), (25, 'ID', 'v2'), (25, 'ASSIGN', ':='), (25, 'ID', 'v2'), (25, 'MINUS', '-'), (25, 'ID', 'temp2'), (25, 'SEMI', ';'), (26, 'WRITE', 'write'), (26, 'LMIDPAREN', '('), (26, 'ID', 'v2'), (26, 'RMIDPAREN', ')'), (27, 'END', 'end'), (29, 'BEGIN', 'begin'), (30, 'READ', 'read'), (30, 'LMIDPAREN', '('), (30, 'ID', 'v1'), (30, 'RMIDPAREN', ')'), (30, 'SEMI', ';'), (31, 'ID', 'v1Add'), (31, 'LMIDPAREN', '('), (31, 'CONST', 10), (31, 'RMIDPAREN', ')'), (31, 'SEMI', ';'), (32, 'WRITE', 'write'), (32, 'LMIDPAREN', '('), (32, 'ID', 'v1'), (32, 'RMIDPAREN', ')'), (32, 'SEMI', ';'), (33, 'READ', 'read'), (33, 'LMIDPAREN', '('), (33, 'ID', 'v1'), (33, 'RMIDPAREN', ')'), (33, 'SEMI', ';'), (34, 'WRITE', 'write'), (34, 'LMIDPAREN', '('), (34, 'ID', 'a'), (34, 'LPAREN', '['), (34, 'CONST', 1), (34, 'RPAREN', ']'), (34, 'RMIDPAREN', ')'), (35, 'END', 'end'), (35, 'DOT', '.'), (35, 'EOF', 'EOF')]
     tokenlist3 = [(1, 'PROGRAM', 'program'), (1, 'ID', 'pp'), (2, 'TYPE', 'type'), (2, 'ID', 't'), (2, 'EQ', '='), (2, 'INTEGER', 'integer'), (2, 'SEMI', ';'), (3, 'VAR', 'var'), (3, 'INTEGER', 'integer'), (3, 'ID', 'v1'), (3, 'COMMA', ','), (3, 'ID', 'v2'), (3, 'COMMA', ','), (3, 'ID', 'v3'), (3, 'SEMI', ';'), (4, 'CHAR', 'char'), (4, 'ID', 'a1'), (4, 'COMMA', ','), (4, 'ID', 'b'), (4, 'COMMA', ','), (4, 'ID', 'c'), (4, 'SEMI', ';'), (5, 'ARRAY', 'array'), (5, 'LPAREN', '['), (5, 'CONST', 1), (5, 'UNDERANGE', '..'), (5, 'CONST', 20), (5, 'RPAREN', ']'), (5, 'OF', 'of'), (5, 'INTEGER', 'integer'), (5, 'ID', 'd'), (5, 'SEMI', ';'), (6, 'PROCEDURE', 'procedure'), (6, 'ID', 'f'), (6, 'LMIDPAREN', '('), (6, 'RMIDPAREN', ')'), (6, 'SEMI', ';'), (7, 'BEGIN', 'begin'), (8, 'ID', 'v1'), (8, 'ASSIGN', ':='), (8, 'CONST', 20), (8, 'PLUS', '+'), (8, 'CONST', 10), (8, 'SEMI', ';'), (9, 'IF', 'if'), (9, 'ID', 'v1'), (9, 'EQ', '='), (9, 'CONST', 30), (10, 'THEN', 'then'), (10, 'ID', 'a1'), (10, 'ASSIGN', ':='), (10, 'ID', "'e'"), (11, 'ELSE', 'else'), (11, 'ID', 'v2'), (11, 'ASSIGN', ':='), (11, 'CONST', 10), (12, 'FI', 'fi'), (13, 'END', 'End'), (14, 'BEGIN', 'Begin'), (15, 'ID', 'f'), (15, 'LMIDPAREN', '('), (15, 'RMIDPAREN', ')'), (15, 'SEMI', ';'), (16, 'WRITE', 'write'), (16, 'LMIDPAREN', '('), (16, 'ID', 'v1'), (16, 'RMIDPAREN', ')'), (17, 'END', 'end'), (17, 'DOT', '.'), (17, 'EOF', 'EOF')]
     formatTransf = FormatTransformer()
-    tokenlist = formatTransf.tokenListTransf(tokenlist2)
+    tokenlist = formatTransf.tokenListTransf(tokenlist3)
     parser = Parser(tokenlist)
     root = parser.parse()
 
