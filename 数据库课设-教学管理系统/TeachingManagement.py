@@ -26,14 +26,14 @@ class DbConnect:
             return {"status": False, "info": e}
         return {"status": True, "info": 'ok'}
 
-    def reset(self):#重要
+    def reset(self):  # 重要
         self.close()
         DATABASE_CONFIG['database'] = self.__database
         self.__db = connect(**DATABASE_CONFIG)
         self.__cursor = self.__db.cursor()
 
     def create(self):
-        #sql_1 = "create database if not exists {} character set gbk COLLATE gbk_chinese_ci;".format(self.__database)
+        # sql_1 = "create database if not exists {} character set gbk COLLATE gbk_chinese_ci;".format(self.__database)
         sql_1 = "create database {} character set gbk COLLATE gbk_chinese_ci;".format(self.__database)
         sql_2 = BuildTable.buildTable["course"]
         sql_3 = BuildTable.buildTable["section"]
@@ -43,6 +43,7 @@ class DbConnect:
         sql_7 = BuildTable.buildTable["takes"]
         sql_8 = BuildTable.buildTable["studentAccount"]
         sql_9 = BuildTable.buildTable["instructorAccount"]
+        sql_10 = BuildTable.buildTable["administeratorAccount"]
         res = self.__exe(sql_1)
         if not res['status']:
             print("数据库创建失败", res['info'])
@@ -73,87 +74,96 @@ class DbConnect:
         res = self.__exe(sql_9)
         if not res['status']:
             print("数据表创建失败", res['info'])
+        res = self.__exe(sql_10)
+        if not res['status']:
+            print("数据表创建失败", res['info'])
             return
         print("数据库{}创建成功，8张数据表创建成功".format(DATABASE_INFO["database"]))
         return {"status": True, "info": 'ok'}
 
-    def insert(self, table,data):#table参数是字符串，data参数是元组
-        sql=""
-        if table=='student':
+    def insert(self, table, data):  # table参数是字符串，data参数是元组
+        sql = ""
+        if table == 'student':
             sql = "insert into student value (%s,%s,%s,%s)"
-        elif table=='takes':
+        elif table == 'takes':
             sql = "insert into takes value (%s,%s,%s,%s,%s,%s)"
-        elif table=='instructor':
+        elif table == 'instructor':
             sql = "insert into instructor value (%s,%s,%s,%s)"
-        elif table=='teaches':
+        elif table == 'teaches':
             sql = "insert into teaches value (%s,%s,%s,%s,%s)"
-        elif table=='course':
+        elif table == 'course':
             sql = "insert into course value (%s,%s,%s,%s)"
-        elif table=='section':
+        elif table == 'section':
             sql = "insert into section value (%s,%s,%s,%s,%s,%s,%s)"
-        elif table=='studentaccount':
+        elif table == 'studentaccount':
             sql = "insert into studentaccount value (%s,%s)"
-        elif table=='instructoraccount':
+        elif table == 'instructoraccount':
             sql = "insert into instructoraccount value (%s,%s)"
+        elif table == 'administeratoraccount':
+            sql = "insert into administeratoraccount value (%s,%s)"
         res = self.__exe(sql, data)
         if not res['status']:
             print("数据插入失败", res['info'])
             return
         return {'status': True, "info": 'ok'}
 
-    def delete(self,table,key):#table参数是字符串，key参数是字符串
+    def delete(self, table, key):  # table参数是字符串，key参数是字符串
         sql = ""
-        if table=='student':
+        if table == 'student':
             sql = "delete from student where ID = %s"
-        elif table=='takes':
+        elif table == 'takes':
             sql = "delete from takes where ID = %s and course_id = %s and sec_id = %s and semester = %s and year = %s"
-        elif table=='instructor':
+        elif table == 'instructor':
             sql = "delete from instructor where ID = %s"
-        elif table=='teaches':
+        elif table == 'teaches':
             sql = "delete from teaches where ID = %s and course_id = %s and sec_id = %s and semester = %s and year = %s"
-        elif table=='course':
+        elif table == 'course':
             sql = "delete from course where course_id = %s"
-        elif table=='section':
+        elif table == 'section':
             sql = "delete from section where course_id = %s and sec_id = %s and semester = %s and year = %s"
-        elif table=='studentaccount':
+        elif table == 'studentaccount':
             sql = "delete from studentaccount where ID = %s"
-        elif table=='instructoraccount':
+        elif table == 'instructoraccount':
             sql = "delete from instructoraccount where ID = %s"
+        elif table == 'administeratoraccount':
+            sql = "delete from administeratoraccount where ID = %s"
 
-        res = self.__exe(sql,key)
+        res = self.__exe(sql, key)
         if not res['status']:
             print("数据删除失败", res['info'])
             return
         return {'status': True, "info": 'ok'}
 
-    def update(self,table,oldkey,newrecord):#table参数是字符串，oldkey参数是元组，newrecord参数是元组
+    def update(self, table, oldkey, newrecord):  # table参数是字符串，oldkey参数是元组，newrecord参数是元组
         sql = ""
-        if table=='student':
+        if table == 'student':
             sql = "update student set ID=%s,name=%s,dept_name=%s,tot_cred=%s where ID = %s"
-        elif table=='takes':
+        elif table == 'takes':
             sql = "update takes set ID=%s,course_id=%s,sec_id=%s,semester=%s,year=%s,grade=%s where ID = %s and course_id=%s and sec_id=%s and semester=%s and year=%s"
-        elif table=='instructor':
+        elif table == 'instructor':
             sql = "update instructor set ID=%s,name=%s,dept_name=%s,salary=%s where ID = %s"
-        elif table=='teaches':
+        elif table == 'teaches':
             sql = "update takes set ID=%s,course_id=%s,sec_id=%s,semester=%s,year=%s where ID = %s and course_id=%s and sec_id=%s and semester=%s and year=%s"
-        elif table=='course':
+        elif table == 'course':
             sql = "update course set course_id=%s,title=%s,dept_name=%s,credits=%s where course_id = %s"
-        elif table=='section':
+        elif table == 'section':
             sql = "update course set course_id=%s,sec_id=%s,semester=%s,year=%s,building=%s,room_number=%s,time_slot_id=%s where course_id=%s and sec_id=%s and semester=%s and year=%s"
-        elif table=='studentaccount':
+        elif table == 'studentaccount':
             sql = "update studentaccount set ID = %s,password = %s where ID = %s"
-        elif table=='instructoraccount':
+        elif table == 'instructoraccount':
             sql = "update instructoraccount set ID = %s,password = %s where ID = %s"
+        elif table == 'administeratoraccount':
+            sql = "update administeratoraccount set ID= %s,password=%s where ID = %s"
 
-        data=newrecord+oldkey
+        data = newrecord + oldkey
 
-        res = self.__exe(sql,data)
+        res = self.__exe(sql, data)
         if not res['status']:
             print("数据更新失败", res['info'])
             return
         return {'status': True, "info": 'ok'}
 
-    def select(self,table):#table参数是字符串
+    def select(self, table):  # table参数是字符串
         sql = "select * from {}".format(table)
         res = self.__exe(sql)
         if not res['status']:
