@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生成绩管理系统</title>
+    <link rel="icon" href="http://v3.bootcss.com/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            list-style: none;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
+
+        .header {
+            position: relative;
+            width: 100%;
+            height: 55px;
+            background-color: black;
+        }
+
+        .left {
+            position: absolute;
+            left: 20px;
+            font-size: 20px;
+            line-height: 55px;
+            color: white;
+            text-align: center;
+        }
+
+        .right {
+            position: absolute;
+            right: 160px;
+            line-height: 55px;
+            color: white;
+            text-align: center;
+        }
+
+        .right_right {
+            position: absolute;
+            right: 24px;
+            line-height: 55px;
+            color: white;
+            text-align: center;
+        }
+
+        .leftside {
+            float: left;
+            background-color: rgb(245, 245, 245);
+            /* height: 663px; */
+            width: 230px;
+        }
+
+        .leftside ul {
+
+            height: 663px;
+        }
+
+        .leftside .first {
+            background-color: rgb(66, 139, 202);
+            margin-top: 25px;
+
+        }
+
+        .leftside .first a {
+            color: white;
+
+        }
+
+        .leftside ul li {
+
+            border-bottom: 0.2px solid white;
+
+            font-size: 20px;
+            height: 60px;
+            line-height: 60px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .leftside ul li a {
+            color: black;
+        }
+
+        .container-fluid {
+            position: relative;
+            top: 35px;
+            left: 70px;
+        }
+
+        /* .sub-header {
+            margin-top: 35px;
+        } */
+
+        .table-responsive {
+
+            margin-top: 10px;
+        }
+
+        /* .table-striped {
+
+            width: 1250px;
+        } */
+
+        thead tr th {
+            background-color: white;
+        }
+
+        tbody tr {
+            background-color: rgb(245, 245, 245);
+        }
+
+        tbody tr td .long {
+            width: 270px;
+            height: 30px;
+        }
+
+        tbody tr td .last {
+            height: 40px;
+            width: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <span class="left">学 生 操 作 页 面</span>
+        <span class="right">你 好，{{user_info}}同 学!</span>
+        <span class="right_right"><a href="/">退出登陆</a></span>
+    </div>
+    <div class="leftside">
+        <ul>
+            <li onclick="window.location.href='/choose_course'"><a >学生选课</a></li>
+            <li class="first" onclick="window.location.href='/drop_course'"><a >学生退课</a></li>
+            <li onclick="window.location.href='/find_grades'"><a >成绩查询</a></li>
+            <li onclick="window.location.href='/find_schedule'"><a >课表查询</a></li>
+            <li onclick="window.location.href='/find_available'"><a >空教室查询</a></li>
+<!--            <li class="first"><a href="/student">学生信息录入</a></li>-->
+<!--            <li><a href="/teacher">选课信息录入</a></li>-->
+<!--            <li><a href="/grade">成绩信息录入</a></li>-->
+<!--            <li><a href="/grade_infos">学生成绩查询</a></li>-->
+<!--            <li><a href="/adminstator">系统管理员变动</a></li>-->
+        </ul>
+    </div>
+    <div class="container-fluid">
+        <h1 class="sub-header">退课页面</h1>&nbsp;&nbsp;
+        <hr>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+<!--                        <th>学号</th>-->
+                        <th>退课课程编号</th>
+<!--                        <th>邮箱</th>-->
+                        <th>#</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <form action="" method="post">
+<!--                            <td><input class="long" name="student_id" type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>-->
+                            <td><input class="long" name="takes_id" type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            </td>
+<!--                            <td><input class="long" name="student_mail"-->
+<!--                                    type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
+<!--                            </td>-->
+                            <td><input class="last" type="submit" value="提交" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td><span>提交结果:{{insert_result}}</span></td>
+                        </form>
+                    </tr>
+                    <tr><td >已选课程列表如下</td></tr>
+                    <tr>
+                        <td>开课编号</td>
+                        <td>课程号</td>
+                        <td>任课老师</td>
+                        <td>最大容量</td>
+                        <td>当前容量</td>
+                        <td>起始周</td>
+                        <td>结束周</td>
+                        <td>起始节</td>
+                        <td>结束节</td>
+                        <td>课程学费</td>
+                    </tr>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{result[0]}}</td>
+                        <td>{{result[1]}}</td>
+                        <td>{{result[2]}}</td>
+                        <td>{{result[3]}}</td>
+                        <td>{{result[4]}}</td>
+                        <td>{{result[5]}}</td>
+                        <td>{{result[6]}}</td>
+                        <td>{{result[7]}}</td>
+                        <td>{{result[8]}}</td>
+                        <td>{{result[9]}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+
+</body>
+
+</html>
