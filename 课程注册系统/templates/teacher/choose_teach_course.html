@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教务管理系统</title>
+    <link rel="icon" href="http://v3.bootcss.com/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        li {
+            list-style: none;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
+
+        .header {
+            position: relative;
+            width: 100%;
+            height: 55px;
+            background-color: black;
+        }
+
+        .left {
+            position: absolute;
+            left: 20px;
+            font-size: 20px;
+            line-height: 55px;
+            color: white;
+            text-align: center;
+        }
+
+        .right {
+            position: absolute;
+            right: 160px;
+            line-height: 55px;
+            color: white;
+            text-align: center;
+        }
+
+        .right_right {
+            position: absolute;
+            right: 24px;
+            line-height: 55px;
+            color: white;
+            text-align: center;
+        }
+
+        .leftside {
+            float: left;
+            background-color: rgb(245, 245, 245);
+            width: 230px;
+            font-family: SimHei;
+        }
+
+        .leftside ul {
+            margin-left: 1px;
+            height: 663px;
+            border-left: 7px solid darkblue;
+        }
+
+        .leftside .first {
+            background-color: rgb(66, 139, 202);
+
+        }
+
+        .leftside .first a {
+            color: white;
+
+        }
+
+        .leftside ul li {
+            border-bottom: 3px solid white;
+            font-size: 20px;
+            height: 60px;
+            line-height: 60px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .leftside ul li a {
+            color: black;
+        }
+        .leftside .top {
+            margin-top: 10px;
+        }
+
+        .container-fluid {
+            position: relative;
+            top: 35px;
+            left: 70px;
+        }
+
+        .table-responsive {
+
+            margin-top: 10px;
+        }
+
+        thead tr th {
+            background-color: white;
+        }
+
+        tbody tr {
+            background-color: white;
+        }
+
+        tbody tr td .long {
+            width: 190px;
+            height: 30px;
+            margin-right: 18px;
+        }
+        tbody tr td .short {
+            width: 90px;
+            height: 30px;
+            margin-right: 18px;
+        }
+
+        tbody tr td .last {
+            margin-left: 8px;
+            height: 25px;
+            width: 70px;
+        }
+        .display {
+            margin-top: 20px;
+        }
+        .display .data {
+            width: 150px;
+            height: 25px;
+            background-color: floralwhite;
+        }
+        .display .data1 {
+            width: 150px;
+            height: 25px;
+            background-color: #87CEFA;
+        }
+        .display .title {
+            width: 150px;
+            height: 25px;
+            background-color: linen;
+        }
+        .display .title1 {
+            width: 150px;
+            height: 25px;
+            background-color: #4682B4;
+        }
+        hr {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <span class="left"><b>主 菜 单</b></span>
+        <span class="right">您好，{{user_info}}老师!</span>
+        <span class="right_right"><a href="/">退出登陆</a></span>
+    </div>
+    <div class="leftside">
+        <ul>
+            <li class="top"><a href="/teacher">&ensp;个人信息查看</a></li>
+            <li><a href="/course">&ensp;课程信息修改</a></li>
+            <li><a href="grade">&ensp;成绩信息录入</a></li>
+            <li class="first"><a href="/choose_teach_course">&ensp;选择教授课程</a></li>
+            <li><a href="/delete_teach_course">&ensp;删除教授课程</a></li>
+        </ul>
+
+    </div>
+    <div class="container-fluid">
+        <h1 class="sub-header">选 择 教 授 课 程</h1>
+        &nbsp;&nbsp;
+        <hr>
+        <span>请输入课程id：</span>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                    <tr>
+                        <form action="" method="post">
+                            <td>课程id：<input class="short" name="week" type="text" /></td>
+                            <td><input class="last" type="submit" value="提交" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                        </form>
+                    </tr>
+                    <tr><td><span>提交结果:{{insert_result}}</span></td></tr>
+            </table>
+            <table style="float:left;" class="display">
+                <tr>
+                    <td class="title">课程id</td>
+                    <td class="title">课程名</td>
+                    <td class="title">总课时</td>
+                </tr>
+                {% for result in results %}
+                <tr>
+                    <td class="data">{{result[0]}}</td>
+                    <td class="data">{{result[1]}}</td>
+                    <td class="data">{{result[2]}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <table style="float:none;" class="display">
+                <tr>
+                    <td class="title1">已选教授课程</td>
+                </tr>
+                {% for result in results_course %}
+                <tr>
+                    <td class="data1">{{result[0]}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
