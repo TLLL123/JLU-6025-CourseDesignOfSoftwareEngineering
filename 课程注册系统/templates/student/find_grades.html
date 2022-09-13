@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生成绩管理系统</title>
+    <link rel="icon" href="http://v3.bootcss.com/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            list-style: none;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
+
+        .header {
+            position: relative;
+            width: 100%;
+            height: 55px;
+            background-color: black;
+        }
+
+        .left {
+            position: absolute;
+            left: 20px;
+            font-size: 20px;
+            line-height: 55px;
+            color: white;
+            text-align: center;
+        }
+
+        .right {
+            position: absolute;
+            right: 160px;
+            line-height: 55px;
+            color: white;
+            text-align: center;
+        }
+
+        .right_right {
+            position: absolute;
+            right: 24px;
+            line-height: 55px;
+            color: white;
+            text-align: center;
+        }
+
+        .leftside {
+            float: left;
+            background-color: rgb(245, 245, 245);
+            /* height: 663px; */
+            width: 230px;
+        }
+
+        .leftside ul {
+
+            height: 663px;
+        }
+
+        .leftside .first {
+            background-color: rgb(66, 139, 202);
+            margin-top: 25px;
+
+        }
+
+        .leftside .first a {
+            color: white;
+
+        }
+
+        .leftside ul li {
+
+            border-bottom: 0.2px solid white;
+
+            font-size: 20px;
+            height: 60px;
+            line-height: 60px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .leftside ul li a {
+            color: black;
+        }
+
+        .container-fluid {
+            position: relative;
+            top: 35px;
+            left: 70px;
+        }
+
+        /* .sub-header {
+            margin-top: 35px;
+        } */
+
+        .table-responsive {
+
+            margin-top: 10px;
+        }
+
+        /* .table-striped {
+
+            width: 1850px;
+        } */
+
+        thead tr th {
+            background-color: white;
+        }
+
+        tbody tr {
+            background-color: rgb(245, 245, 245);
+        }
+
+        tbody tr td select {
+            height: 40px;
+            width:100px;
+        }
+
+
+        tbody tr td .long {
+            width: 220px;
+            height: 42px;
+        }
+
+        tbody tr td .last {
+            height: 40px;
+            width: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <span class="left">学 生 操 作 页 面</span>
+        <span class="right">你 好，{{user_info}}同 学!</span>
+        <span class="right_right"><a href="/">退出登陆</a></span>
+    </div>
+    <div class="leftside">
+        <ul>
+            <li  onclick="window.location.href='/choose_course'"><a >学生选课</a></li>
+            <li onclick="window.location.href='/drop_course'"><a >学生退课</a></li>
+            <li class="first" onclick="window.location.href='/find_grades'"><a >成绩查询</a></li>
+            <li onclick="window.location.href='/find_schedule'"><a >课表查询</a></li>
+            <li onclick="window.location.href='/find_available'"><a >空教室查询</a></li>
+        </ul>
+    </div>
+    <div class="container-fluid">
+        <h1 class="sub-header">学 生 成 绩 查 询 </h1>&nbsp;&nbsp;
+        <hr>
+        <div class="table-responsive">
+            <table class="table table-striped" cellspaing="10">
+                <!-- <thead>
+
+                </thead> -->
+                <tbody>
+                    <tr>
+                        <form action="" method="post">
+                            <td><label for="#">请选择查询的学期</label>&nbsp;&nbsp;&nbsp;</td>
+                            <td><select name="selected_one">
+                                    {% for chose in choses %}
+                                    <option value={{chose[0]}} selected="selected">{{chose[1]}}{{chose[2]}}</option>
+<!--                                    <option value="姓名">{{chose[0]}}</option>-->
+<!--                                    <option value="课程号">{{chose[0]}}</option>-->
+<!--                                    <option value="所在班级">{{chose[0]}}</option>-->
+                                    {% endfor %}
+                                </select></td>&nbsp;
+<!--                            <td><input class="long" type="text" name="query"></td>-->
+                            <td><input class="last" type="submit" value="查询" /></td>
+                            <td><span>查询结果:{{query_result}}</span></td>
+                        </form>
+                    </tr>
+                    <tr>
+                        <td>学生学号</td>
+                        <td>课程号</td>
+                        <td>成绩</td>
+                    </tr>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{result[0]}}</td>
+                        <td>{{result[1]}}</td>
+                        <td>{{result[2]}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+
+</html>
