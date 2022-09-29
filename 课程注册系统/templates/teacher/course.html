@@ -6,162 +6,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教务管理系统</title>
     <link rel="icon" href="http://v3.bootcss.com/favicon.ico">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
+    <style type="text/css">
+            .top{
+                /* 设置宽度高度背景颜色 */
+                height: 50px;
+                width:100%;
+                background:rgb(146, 32, 22);
+                position: fixed; /*固定在顶部*/
+                top: 0;/*离顶部的距离为0*/
+            }
+            .top ul{
+                /* 清除ul标签的默认样式 */
+                width: 80%;
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+            .top li {
+                float:left; /* 使li内容横向浮动，即横向排列  */
+                margin-right:50px;  /* 两个li之间的距离*/
+            }
 
-        li {
-            list-style: none;
-        }
+            .top li a{
+               /* 设置链接内容显示的格式*/
+                display: block; /* 把链接显示为块元素可使整个链接区域可点击 */
+                color:white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none; /* 去除下划线 */
+            }
+            .top li a:hover{
+                /* 鼠标选中时背景变为黑色 */
+                background-color: #111;
+            }
+            .top ul li ul{
+                /* 设置二级菜单 */
+                width: auto;
+                background:rgb(255, 255, 255);
+                position: absolute;
+                display: none; /* 默认隐藏二级菜单的内容 */
 
-        a {
-            text-decoration: none;
-            color: white;
-        }
+            }
+            .top ul li ul li{
+                /* 二级菜单li内容的显示 */
+                margin-right:0;
+                float:none;
+                text-align: center;
+            }
+            .top ul li:hover ul{
+                /* 鼠标选中二级菜单内容时 */
+                display: block;
+            }
 
-        .header {
-            position: relative;
-            width: 100%;
-            height: 55px;
-            background-color: black;
-        }
+            .table-responsive {
+                margin-top: 10px;
+                margin-bottom: 25px;
+            }
 
-        .left {
-            position: absolute;
-            left: 20px;
-            font-size: 20px;
-            line-height: 55px;
-            color: white;
-            text-align: center;
-        }
+            .display {
+                margin-top: 10px;
+            }
+            .display .data {
+                width: 150px;
+                height: 25px;
+                background-color: rgb(229,202,185);
+            }
+            .display .title {
+                width: 150px;
+                height: 25px;
+                background-color: rgb(91,80,81);
+                color: white;
+            }
 
-        .right {
-            position: absolute;
-            right: 160px;
-            line-height: 55px;
-            color: white;
-            text-align: center;
-        }
+            .schedule {
+                margin-top: 10px;
+            }
+            .schedule .data {
+                width: 150px;
+                height: 30px;
+                background-color: rgb(216,215,218);
+            }
+            .schedule .title {
+                width: 150px;
+                height: 30px;
+                background-color: rgb(49,140,236);
+                color: white;
+            }
 
-        .right_right {
-            position: absolute;
-            right: 24px;
-            line-height: 55px;
-            color: white;
-            text-align: center;
-        }
-
-        .leftside {
-            float: left;
-            background-color: rgb(245, 245, 245);
-            width: 230px;
-            font-family: SimHei;
-        }
-
-        .leftside ul {
-            margin-left: 1px;
-            height: 663px;
-            border-left: 7px solid darkblue;
-        }
-
-        .leftside .first {
-            background-color: rgb(66, 139, 202);
-
-        }
-
-        .leftside .first a {
-            color: white;
-
-        }
-
-        .leftside ul li {
-            border-bottom: 3px solid white;
-            font-size: 20px;
-            height: 60px;
-            line-height: 60px;
-            width: 100%;
-            text-align: left;
-        }
-
-        .leftside ul li a {
-            color: black;
-        }
-        .leftside .top {
-            margin-top: 10px;
-        }
-
-        .container-fluid {
-            position: relative;
-            top: 35px;
-            left: 70px;
-        }
-
-        .table-responsive {
-
-            margin-top: 10px;
-        }
-
-        thead tr th {
-            background-color: white;
-        }
-
-        tbody tr {
-            background-color: white;
-        }
-
-        tbody tr td .long {
-            width: 190px;
-            height: 30px;
-            margin-right: 18px;
-        }
-        tbody tr td .short {
-            width: 90px;
-            height: 30px;
-            margin-right: 18px;
-        }
-
-        tbody tr td .last {
-            margin-left: 8px;
-            height: 25px;
-            width: 70px;
-        }
-        .display {
-            margin-top: 20px;
-        }
-        .display .data {
-            width: 150px;
-            height: 25px;
-            background-color: floralwhite;
-        }
-        .display .title {
-            width: 150px;
-            height: 25px;
-            background-color: linen;
-        }
-        hr {
-            margin-bottom: 10px;
-        }
-    </style>
+       </style>
 </head>
 
 <body>
-    <div class="header">
-        <span class="left"><b>主 菜 单</b></span>
-        <span class="right">您好，{{user_info}}老师!</span>
-        <span class="right_right"><a href="/">退出登陆</a></span>
+    <div class="top">
+       <center>
+            <ul>
+                <li><a href="/teacher">个人信息查看</a></li>
+                <li><a href="#">课程信息修改</a></li>
+                <li><a href="/grade">成绩信息录入</a></li>
+                <li>
+                    <a href="#">课程管理</a>
+                    <ul>
+                        <li style="background-color: rgb(146, 32, 22)"><a href="/choose_teach_course">选择教授课程</a></li>
+                        <li style="background-color: rgb(146, 32, 22)"><a href="/delete_teach_course">删除教授课程</a></li>
+                    </ul>
+                </li>
+                <li><b><a style="color: lemonchiffon">{{user_info}}老师，你好！</a></b></li>
+                <li><a href="/">退出登陆</a><li>
+            </ul>
+        </center>
     </div>
-    <div class="leftside">
-        <ul>
-            <li class="top"><a href="/teacher">&ensp;个人信息查看</a></li>
-            <li class="first"><a href="#">&ensp;课程信息修改</a></li>
-            <li><a href="/grade">&ensp;成绩信息录入</a></li>
-            <li><a href="/choose_teach_course">&ensp;选择教授课程</a></li>
-            <li><a href="/delete_teach_course">&ensp;删除教授课程</a></li>
-        </ul>
 
-    </div>
+    &nbsp;
+
     <div class="container-fluid">
         <h1 class="sub-header">课 程 信 息 修 改</h1>
         &nbsp;&nbsp;
