@@ -161,9 +161,84 @@
         </ul>
     </div>
 
-    <div class="container-fluid">
-        <h1 class="sub-header">添加学生</h1>&nbsp;&nbsp;
+     <div class="container-fluid">
+       <h1 class="sub-header">添加学生</h1>&nbsp;&nbsp;
+        <hr>
+        <span>查询部分</span>
+        <br>
+        <span>点击即可查看整张表单：</span>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tr>
+                    <form action="" method="post">
+<!--                        <td>教授id：<input class="long" name="teacher_id" type="text" /></td>-->
+                        <td><input class="last" type="submit" value="查询" /></td>
+                    </form>
+                </tr>
+                <tr><td><span>查询结果:{{search_result}}</span></td></tr>
+            </table>
+            <br>
+            <span>请添加学生相应信息</span>
+            <table class="table table-striped">
+                <form action="" method="post">
+                    <tr>
+
+                            <td>学号：<input class="long" name="student_id" type="text" /></td>
+                            <td>姓名：<input class="long" name="name" type="text" /></td>
+                            <td>state：<input class="long" name="state" type="text" /></td>
+                            <td>class_id：<input class="long" name="class_id" type="text" /></td>
+                     </tr>
+                     <tr>
+
+                            <td>性别：<input class="long" name="gender" type="text" /></td>
+                            <td>出生日期：<input class="long" name="birthday" type="text" /></td>
+                            <td>电话：<input class="long" name="phone" type="text" /></td>
+                            <td>邮箱：<input class="long" name="email" type="text" /></td>
+                     </tr>
+<!--                            <td>社会保险号：<input class="long" name="social_security_number" type="text" /></td>-->
+<!--                            <td>社保号码：<input class="long" name="status" type="text" /></td>-->
+                     <tr>
+                         <td>状态：<input class="long" name="status" type="text" /></td>
+                          <td>毕业日期：<input class="long" name="gra_date" type="text" /></td>
+                         <td><input class="last" type="submit" value="添加" /></td>
+                    </tr>
+                </form>
+                    <tr><td><span>提交结果:{{insert_result}}</span></td></tr>
+            </table>
+            <br>
+            <table class="display">
+                <tr>
+                     <td class="title"  align="center" >学号</td>
+                    <td class="title"  align="center">姓名</td>
+                    <td class="title" align="center">state</td>
+                    <td class="title" align="center">班级号</td>
+                    <td class="title" align="center">性别</td>
+                    <td class="title" align="center">出生日期</td>
+                    <td class="title" align="center">手机号</td>
+                    <td class="title" align="center">邮箱</td>
+                    <td class="title"  align="center">社保号</td>
+                    <td class="title"  align="center">状态</td>
+                    <td class="title"  align="center">毕业日期</td>
+                </tr>
+                {% for result in results %}
+                <tr>
+                    <td class="data">{{result[0]}}</td>
+                    <td class="data">{{result[1]}}</td>
+                    <td class="data">{{result[2]}}</td>
+                    <td class="data">{{result[3]}}</td>
+                    <td class="data">{{result[4]}}</td>
+                    <td class="data">{{result[5]}}</td>
+                    <td class="data">{{result[6]}}</td>
+                    <td class="data">{{result[7]}}</td>
+                    <td class="data">{{result[8]}}</td>
+                    <td class="data">{{result[9]}}</td>
+                    <td class="data">{{result[10]}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
+
 
 </body>
 

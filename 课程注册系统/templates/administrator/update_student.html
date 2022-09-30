@@ -161,7 +161,66 @@
         </ul>
     </div>
     <div class="container-fluid">
-        <h1 class="sub-header">更新学生</h1>&nbsp;&nbsp;
+        <h1 class="sub-header">学 生 信 息 修 改</h1>&nbsp;&nbsp;
+        <hr>
+        <span>查询部分</span>
+        <br>
+        <span>请输入要修改的学生id：</span>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tr>
+                    <form action="" method="post">
+                        <td>学生id：<input class="long" name="student_id" type="text" /></td>
+                        <td><input class="last" type="submit" value="查询" /></td>
+                    </form>
+                </tr>
+                <tr><td><span>查询结果:{{search_result}}</span></td></tr>
+            </table>
+            <span>修改部分</span>
+            <table class="table table-striped">
+                    <tr>
+                        <form action="" method="post">
+<!--                            <td>教授id：<input class="long" name="teacher_id" type="text" /></td>-->
+                            <td>学生id：<input class="long" name="student_id" type="text" /></td>
+                            <td>电话：<input class="long" name="phone" type="text" /></td>
+                            <td>邮箱：<input class="long" name="email" type="text" /></td>
+                            <td>状态：<input class="long" name="status" type="text" /></td>
+                            <td><input class="last" type="submit" value="提交" /></td>
+                        </form>
+                    </tr>
+                    <tr><td><span>提交结果:{{insert_result}}</span></td></tr>
+            </table>
+            <table class="display">
+                <tr>
+                      <td class="title"  align="center" >学号</td>
+                    <td class="title"  align="center">姓名</td>
+                    <td class="title" align="center">state</td>
+                    <td class="title" align="center">班级号</td>
+                    <td class="title" align="center">性别</td>
+                    <td class="title" align="center">出生日期</td>
+                    <td class="title" align="center">手机号</td>
+                    <td class="title" align="center">邮箱</td>
+                    <td class="title"  align="center">社保号</td>
+                    <td class="title"  align="center">状态</td>
+                    <td class="title"  align="center">毕业日期</td>
+                </tr>
+                {% for result in results %}
+                <tr>
+                  <td class="data">{{result[0]}}</td>
+                    <td class="data">{{result[1]}}</td>
+                    <td class="data">{{result[2]}}</td>
+                    <td class="data">{{result[3]}}</td>
+                    <td class="data">{{result[4]}}</td>
+                    <td class="data">{{result[5]}}</td>
+                    <td class="data">{{result[6]}}</td>
+                    <td class="data">{{result[7]}}</td>
+                    <td class="data">{{result[8]}}</td>
+                    <td class="data">{{result[9]}}</td>
+                    <td class="data">{{result[10]}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
 
 
