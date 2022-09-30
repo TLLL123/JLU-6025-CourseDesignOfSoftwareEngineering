@@ -712,6 +712,98 @@ def add_professor():
      search_result=''
      insert_result=''
      results = []
+     if flask.request.method == 'POST':
+
+         # teacher_id = flask.request.values.get("teacher_id", "")
+         teacher_name = flask.request.values.get("teacher_name", "")
+         gender= flask.request.values.get("gender", "")
+         birthday = flask.request.values.get("birthday", "")
+         phone = flask.request.values.get("phone", "")
+         email = flask.request.values.get("email", "")
+         # social_security_number = flask.request.values.get("social_security_number", "")
+         status = flask.request.values.get("status", "")
+         department = flask.request.values.get("department", "")
+
+
+         # print("teacher_id:", teacher_id, "phone : ", phone, "email: ", email)  # 打印出这三个输入的信息
+         # print("teacher_id=",teacher_id,"phone=",phone,"email=",email)
+         # print("wxh1 : ",teacher_id)
+         print(teacher_name,gender,birthday,phone,email,status,department)
+         # print(teacher_name, gender)
+        #当查询第一行的时候
+         if  teacher_name =='' and gender=='' and birthday == ''  and phone == '' and email == ''  and status=='' and department=='':
+             # print("查询，teacher_id=",teacher_id)
+             # sql_list = "select * from teachers where teacher_id=(%s);"
+             sql_list = "select * from teachers;"
+             # cursor.execute(sql_list, teacher_id)  # 执行相应的sql语句
+             cursor.execute(sql_list)
+             results = cursor.fetchall()
+             # print("results=",results)
+             if len(results) != 0:
+                 search_result = "查询成功！"
+             else:
+                 search_result = "查询失败！"
+         elif teacher_name!='' and gender!='' and birthday!='' and phone!='' and email!=''  and status !='' and department!='':
+             # print("修改，teacher_id=",teacher_id,"phone=",phone,"email=",email)
+             print('牛逼！')
+             if gender not in ['男','女','其他']:
+                 insert_result+="性别有误、"
+             len_bir=len(birthday)
+             if len_bir !=10:
+                 insert_result += "出生日期格式有误、"
+             else:
+                 for i in range(len_bir):
+                     if i >= 0 and i <= 3:
+                         if birthday[i]> '9' or birthday[i] < '0':
+                             insert_result += "出生日期格式有误、"
+                             break
+                     elif i==4:
+                         if birthday[i]!='-':
+                             insert_result+="出生日期格式有误、"
+                     elif i<=6:
+                         if birthday[i]> '9' or birthday[i] < '0':
+                             insert_result += "出生日期格式有误、"
+                             break
+                     elif i==7:
+                         if birthday[i]!='-':
+                             insert_result+="出生日期格式有误、"
+                     else:
+                         if birthday[i]> '9' or birthday[i] < '0':
+                             insert_result += "出生日期格式有误、"
+                             break
+             for p in phone:
+                 if p > '9' or p < '0':
+                     insert_result += "电话号码格式有误、"
+                     break
+             if '@' not in email:
+                 insert_result += "邮箱格式有误"
+             if insert_result != '':
+                 # return flask.render_template('update_professor.html', insert_result=insert_result)
+                 return flask.render_template('administrator/add_professor.html', search_result=search_result,
+                                              insert_result=insert_result, results=results)
+             print("你好啊")
+             try:
+                 # 信息存入数据库
+                 # sql = "call update_info(%s, %s, %s);"
+                 sql = " call addTeacher((%s),(%s),(%s), (%s), (%s), (%s), (%s));"
+                 cursor.execute(sql, (teacher_name, gender, birthday,phone,email,status,department))
+                 print("再见")
+                 # cursor.execute(sql, (teacher_id, phone, email))
+                 results = cursor.fetchall()
+                 print("results=", results)
+                 insert_result = "添加教授成功"
+             except Exception as err:
+                 insert_result = "添加教授失败"
+                 pass
+             db.commit()
+             # POST显示数据
+             # sql_list = "select * from teachers where teacher_id=(%s);"
+             # cursor.execute(sql_list, teacher_id)
+             # results = cursor.fetchall()
+             # print(results)
+         else:
+             insert_result = "信息不完整，添加教授失败"
+
      return flask.render_template('administrator/add_professor.html',search_result=search_result, insert_result=insert_result,results=results)
 
 @app.route('/update_professor', methods=['GET', "POST"])

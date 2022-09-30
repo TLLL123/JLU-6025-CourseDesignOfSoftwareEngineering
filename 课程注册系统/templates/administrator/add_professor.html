@@ -165,29 +165,42 @@
         <hr>
         <span>查询部分</span>
         <br>
-        <span>请输入修改的教授id：</span>
+        <span>点击即可查看整张表单：</span>
         <div class="table-responsive">
             <table class="table table-striped">
                 <tr>
                     <form action="" method="post">
-                        <td>教授id：<input class="long" name="teacher_id" type="text" /></td>
+<!--                        <td>教授id：<input class="long" name="teacher_id" type="text" /></td>-->
                         <td><input class="last" type="submit" value="查询" /></td>
                     </form>
                 </tr>
                 <tr><td><span>查询结果:{{search_result}}</span></td></tr>
             </table>
-            <span>修改部分</span>
+            <br>
+            <span>请添加教授相应信息</span>
             <table class="table table-striped">
+                <form action="" method="post">
                     <tr>
-                        <form action="" method="post">
-                            <td>教授id：<input class="long" name="teacher_id" type="text" /></td>
+
+                            <td>教授姓名：<input class="long" name="teacher_name" type="text" /></td>
+                            <td>性别：<input class="long" name="gender" type="text" /></td>
+
+                            <td>生日：<input class="long" name="birthday" type="text" /></td>
                             <td>电话：<input class="long" name="phone" type="text" /></td>
-                            <td>邮箱：<input class="long" name="email" type="text" /></td>
-                            <td><input class="last" type="submit" value="提交" /></td>
-                        </form>
                     </tr>
+                     <tr>
+
+                            <td>邮箱：<input class="long" name="email" type="text" /></td>
+<!--                            <td>社会保险号：<input class="long" name="social_security_number" type="text" /></td>-->
+                            <td>职称：<input class="long" name="status" type="text" /></td>
+                            <td>部门：<input class="long" name="department" type="text" /></td>
+
+                            <td><input class="last" type="submit" value="添加" /></td>
+                    </tr>
+                </form>
                     <tr><td><span>提交结果:{{insert_result}}</span></td></tr>
             </table>
+            <br>
             <table class="display">
                 <tr>
                     <td class="title"  align="center" >工号</td>
@@ -197,7 +210,7 @@
                     <td class="title" align="center">电话</td>
                     <td class="title" align="center">邮箱</td>
                     <td class="title" align="center">社会保险号</td>
-                    <td class="title" align="center">状态</td>
+                    <td class="title" align="center">职称</td>
                     <td class="title"  align="center">部门</td>
                 </tr>
                 {% for result in results %}
