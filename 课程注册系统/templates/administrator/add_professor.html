@@ -161,8 +161,62 @@
         </ul>
     </div>
     <div class="container-fluid">
-        <h1 class="sub-header">添加教授</h1>&nbsp;&nbsp;
+       <h1 class="sub-header">添加教授</h1>&nbsp;&nbsp;
+        <hr>
+        <span>查询部分</span>
+        <br>
+        <span>请输入修改的教授id：</span>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tr>
+                    <form action="" method="post">
+                        <td>教授id：<input class="long" name="teacher_id" type="text" /></td>
+                        <td><input class="last" type="submit" value="查询" /></td>
+                    </form>
+                </tr>
+                <tr><td><span>查询结果:{{search_result}}</span></td></tr>
+            </table>
+            <span>修改部分</span>
+            <table class="table table-striped">
+                    <tr>
+                        <form action="" method="post">
+                            <td>教授id：<input class="long" name="teacher_id" type="text" /></td>
+                            <td>电话：<input class="long" name="phone" type="text" /></td>
+                            <td>邮箱：<input class="long" name="email" type="text" /></td>
+                            <td><input class="last" type="submit" value="提交" /></td>
+                        </form>
+                    </tr>
+                    <tr><td><span>提交结果:{{insert_result}}</span></td></tr>
+            </table>
+            <table class="display">
+                <tr>
+                    <td class="title"  align="center" >工号</td>
+                    <td class="title"  align="center">姓名</td>
+                    <td class="title" align="center">性别</td>
+                    <td class="title" align="center">生日</td>
+                    <td class="title" align="center">电话</td>
+                    <td class="title" align="center">邮箱</td>
+                    <td class="title" align="center">社会保险号</td>
+                    <td class="title" align="center">状态</td>
+                    <td class="title"  align="center">部门</td>
+                </tr>
+                {% for result in results %}
+                <tr>
+                    <td class="data">{{result[0]}}</td>
+                    <td class="data">{{result[1]}}</td>
+                    <td class="data">{{result[2]}}</td>
+                    <td class="data">{{result[3]}}</td>
+                    <td class="data">{{result[4]}}</td>
+                    <td class="data">{{result[5]}}</td>
+                    <td class="data">{{result[6]}}</td>
+                    <td class="data">{{result[7]}}</td>
+                    <td class="data">{{result[8]}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
+
 
 
 </body>

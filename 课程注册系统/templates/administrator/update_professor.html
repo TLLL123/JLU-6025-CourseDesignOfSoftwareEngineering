@@ -163,6 +163,8 @@
     <div class="container-fluid">
         <h1 class="sub-header">教 授 信 息 修 改</h1>&nbsp;&nbsp;
         <hr>
+        <span>查询部分</span>
+        <br>
         <span>请输入修改的教授id：</span>
         <div class="table-responsive">
             <table class="table table-striped">
@@ -174,6 +176,7 @@
                 </tr>
                 <tr><td><span>查询结果:{{search_result}}</span></td></tr>
             </table>
+            <span>修改部分</span>
             <table class="table table-striped">
                     <tr>
                         <form action="" method="post">
@@ -187,15 +190,15 @@
             </table>
             <table class="display">
                 <tr>
-                    <td class="title">工号</td>
-                    <td class="title">姓名</td>
-                    <td class="title">性别</td>
-                    <td class="title">生日</td>
-                    <td class="title">电话</td>
-                    <td class="title">邮箱</td>
-                    <td class="title">社会保险号</td>
-                    <td class="title">状态</td>
-                    <td class="title">部门</td>
+                    <td class="title"  align="center" >工号</td>
+                    <td class="title"  align="center">姓名</td>
+                    <td class="title" align="center">性别</td>
+                    <td class="title" align="center">生日</td>
+                    <td class="title" align="center">电话</td>
+                    <td class="title" align="center">邮箱</td>
+                    <td class="title" align="center">社会保险号</td>
+                    <td class="title" align="center">状态</td>
+                    <td class="title"  align="center">部门</td>
                 </tr>
                 {% for result in results %}
                 <tr>

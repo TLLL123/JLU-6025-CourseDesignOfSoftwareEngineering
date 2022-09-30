@@ -8,7 +8,8 @@ import pymysql  # 连接数据库
 app = flask.Flask(__name__)
 # 初始化数据库连接
 # 使用pymysql.connect方法连接本地mysql数据库
-db = pymysql.connect(host='localhost', port=3306, charset='utf8', database="course_registration_system", user='root', password='123456')
+# db = pymysql.connect(host='localhost', port=3306, charset='utf8', database="my_se", user='root', password='wxh722019')
+db = pymysql.connect(host='47.95.148.117', port=3306, charset='utf8', database="wxh_database", user='wxh', password='jlu12345')
 # 连接服务器中的数据库
 # db = pymysql.connect(host='47.95.148.117', port=3306, charset='utf8', database="test",password='Jlu12345',user='dqy')
 # 操作数据库，获取db下的cursor对象
@@ -707,7 +708,11 @@ def delete_teach_course():
 #管理员
 @app.route('/add_professor', methods=['GET', "POST"])
 def add_professor():
-    return flask.render_template('administrator/add_professor.html')
+     # return flask.render_template('administrator/add_professor.html')
+     search_result=''
+     insert_result=''
+     results = []
+     return flask.render_template('administrator/add_professor.html',search_result=search_result, insert_result=insert_result,results=results)
 
 @app.route('/update_professor', methods=['GET', "POST"])
 def update_professor():
@@ -718,14 +723,15 @@ def update_professor():
         teacher_id = flask.request.values.get("teacher_id", "")
         phone = flask.request.values.get("phone", "")
         email = flask.request.values.get("email", "")
+        print("teacher_id:",teacher_id,"phone : ",phone,"email: ",email)  #打印出这三个输入的信息
         #print("teacher_id=",teacher_id,"phone=",phone,"email=",email)
         if teacher_id!='' and phone=='' and email=='':
             #print("查询，teacher_id=",teacher_id)
             sql_list = "select * from teachers where teacher_id=(%s);"
-            cursor.execute(sql_list, teacher_id)
+            cursor.execute(sql_list, teacher_id)#执行相应的sql语句
             results = cursor.fetchall()
-            #print("results=",results)
-            if results!=None:
+            # print("results=",results)
+            if len(results)!=0:
                 search_result="查询成功！"
             else:
                 search_result="查询失败！"
@@ -733,18 +739,24 @@ def update_professor():
             #print("修改，teacher_id=",teacher_id,"phone=",phone,"email=",email)
             for p in phone:
                 if p > '9' or p < '0':
-                    insert_result = "电话号码格式有误"
+                    insert_result += "电话号码格式有误、"
                     break
             if '@' not in email:
-                insert_result = "邮箱格式有误"
+                insert_result += "邮箱格式有误"
             if insert_result != '':
-                return flask.render_template('update_professor.html', insert_result=insert_result)
+                # return flask.render_template('update_professor.html', insert_result=insert_result)
+                return flask.render_template('administrator/update_professor.html', search_result=search_result,
+                                             insert_result=insert_result, results=results)
             try:
                 # 信息存入数据库
-                sql = "call update_info(%s, %s, %s);"
-                cursor.execute(sql, (teacher_id, phone, email))
+                # sql = "call update_info(%s, %s, %s);"
+                print("你好啊")
+                sql = "update teachers set phone=(%s), mail=(%s) where teacher_id=(%s);"
+                cursor.execute(sql, (phone, email,teacher_id))
+                print("再见")
+                # cursor.execute(sql, (teacher_id, phone, email))
                 results = cursor.fetchall()
-                #print("results=", results)
+                print("results=", results)
                 insert_result = "修改信息成功"
             except Exception as err:
                 insert_result = "修改信息失败"
@@ -760,7 +772,58 @@ def update_professor():
 
 @app.route('/delete_professor', methods=['GET', "POST"])
 def delete_professor():
-    return flask.render_template('administrator/delete_professor.html')
+    search_result = ''
+    insert_result = ''
+    results = []
+    if flask.request.method == 'POST':
+        teacher_id = flask.request.values.get("teacher_id", "")
+        phone = flask.request.values.get("phone", "")
+        email = flask.request.values.get("email", "")
+        print("teacher_id:", teacher_id, "phone : ", phone, "email: ", email)  # 打印出这三个输入的信息
+        # print("teacher_id=",teacher_id,"phone=",phone,"email=",email)
+        if teacher_id != '' and phone == '' and email == '':  # 选择第一行
+            # print("查询，teacher_id=",teacher_id)
+            sql_list = "select * from teachers where teacher_id=(%s);"
+            cursor.execute(sql_list, teacher_id)  # 执行相应的sql语句
+            results = cursor.fetchall()
+            # print("results=",results)
+            if len(results) != 0:
+                search_result = "查询成功！"
+            else:  # 选择第二行
+                search_result = "查询失败！"
+        else:
+            # print("修改，teacher_id=",teacher_id,"phone=",phone,"email=",email)
+            for p in phone:
+                if p > '9' or p < '0':
+                    insert_result += "电话号码格式有误、"
+                    break
+            if '@' not in email:
+                insert_result += "邮箱格式有误"
+            if insert_result != '':
+                # return flask.render_template('update_professor.html', insert_result=insert_result)
+                return flask.render_template('administrator/delete_professor.html', search_result=search_result,
+                                             insert_result=insert_result, results=results)
+            try:
+                # 信息存入数据库
+                # sql = "call update_info(%s, %s, %s);"
+                sql = "delete from teachers where teacher_id=(%s) and phone=(%s) and mail=(%s);"  #需要考虑级联删除的问题
+                cursor.execute(sql, (teacher_id, phone, email))
+                # cursor.execute(sql, (teacher_id, phone, email))
+                results = cursor.fetchall()
+                print("results=", results)
+                insert_result = "删除成功"
+            except Exception as err:
+                insert_result = "删除失败"
+                pass
+            db.commit()
+            # POST显示数据
+            sql_list = "select * from teachers where teacher_id=(%s);"
+            cursor.execute(sql_list, teacher_id)
+            results = cursor.fetchall()
+            # print(results)
+    return flask.render_template('administrator/delete_professor.html', search_result=search_result,
+                                 insert_result=insert_result, results=results)
+
 
 @app.route('/add_student', methods=['GET', "POST"])
 def addSections():
@@ -774,7 +837,7 @@ def update_student():
 def delete_student():
     return flask.render_template('administrator/delete_student.html')
 
-@app.route('/close_register', methods=['GET', "POST"])
+@app.route('/close_register', methods=['GET', "POST"]) #关闭注册，这个很有意思
 def close_register():
     return flask.render_template('administrator/close_register.html')
 

@@ -63,7 +63,7 @@ CREATE TABLE `classes` (
   `major_id` char(5) DEFAULT NULL,
   PRIMARY KEY (`class_id`),
   KEY `classes_ibfk_1` (`major_id`),
-  CONSTRAINT `classes_ibfk_1` FOREIGN KEY (`major_id`) REFERENCES `majors` (`major_id`)
+  CONSTRAINT `classes_ibfk_1` FOREIGN KEY (`major_id`) REFERENCES `majors` (`major_id`)  ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -89,7 +89,7 @@ CREATE TABLE `classrooms` (
   `capacity` smallint(6) NOT NULL,
   PRIMARY KEY (`classroom_id`),
   KEY `building_id` (`building_id`),
-  CONSTRAINT `classrooms_ibfk_1` FOREIGN KEY (`building_id`) REFERENCES `buildings` (`building_id`)
+  CONSTRAINT `classrooms_ibfk_1` FOREIGN KEY (`building_id`) REFERENCES `buildings` (`building_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -172,7 +172,7 @@ CREATE TABLE `majors` (
   `require_course_credis` smallint(6) NOT NULL,
   PRIMARY KEY (`major_id`),
   KEY `majors_ibfk_1` (`campus_id`),
-  CONSTRAINT `majors_ibfk_1` FOREIGN KEY (`campus_id`) REFERENCES `campus` (`campus_id`)
+  CONSTRAINT `majors_ibfk_1` FOREIGN KEY (`campus_id`) REFERENCES `campus` (`campus_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -195,8 +195,8 @@ CREATE TABLE `majors_courses` (
   `grade` tinyint(1) NOT NULL,
   PRIMARY KEY (`major_id`,`course_id`),
   KEY `course_id` (`course_id`),
-  CONSTRAINT `majors_courses_ibfk_1` FOREIGN KEY (`major_id`) REFERENCES `majors` (`major_id`),
-  CONSTRAINT `majors_courses_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`)
+  CONSTRAINT `majors_courses_ibfk_1` FOREIGN KEY (`major_id`) REFERENCES `majors` (`major_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `majors_courses_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -231,9 +231,9 @@ CREATE TABLE `sections` (
   KEY `teacher_id` (`teacher_id`),
   KEY `takes_id` (`takes_id`),
   KEY `classroom_id` (`classroom_id`),
-  CONSTRAINT `sections_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `teachers` (`teacher_id`),
-  CONSTRAINT `sections_ibfk_2` FOREIGN KEY (`takes_id`) REFERENCES `takes` (`takes_id`),
-  CONSTRAINT `sections_ibfk_3` FOREIGN KEY (`classroom_id`) REFERENCES `classrooms` (`classroom_id`)
+  CONSTRAINT `sections_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `teachers` (`teacher_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `sections_ibfk_2` FOREIGN KEY (`takes_id`) REFERENCES `takes` (`takes_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `sections_ibfk_3` FOREIGN KEY (`classroom_id`) REFERENCES `classrooms` (`classroom_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -300,7 +300,7 @@ CREATE TABLE `students` (
   PRIMARY KEY (`student_id`),
   KEY `idx_name` (`name`) USING BTREE,
   KEY `students_ibfk_1` (`class_id`),
-  CONSTRAINT `students_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`class_id`)
+  CONSTRAINT `students_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`class_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -325,8 +325,8 @@ CREATE TABLE `student_takes` (
   `score` float(4,1) DEFAULT NULL,
   PRIMARY KEY (`student_id`,`takes_id`),
   KEY `takes_id` (`takes_id`),
-  CONSTRAINT `student_takes_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`),
-  CONSTRAINT `student_takes_ibfk_2` FOREIGN KEY (`takes_id`) REFERENCES `takes` (`takes_id`)
+  CONSTRAINT `student_takes_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `student_takes_ibfk_2` FOREIGN KEY (`takes_id`) REFERENCES `takes` (`takes_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -368,9 +368,9 @@ CREATE TABLE `takes` (
   KEY `course_id` (`course_id`),
   KEY `semester_id` (`semester_id`),
   KEY `teacher_id` (`teacher_id`),
-  CONSTRAINT `takes_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`),
-  CONSTRAINT `takes_ibfk_2` FOREIGN KEY (`semester_id`) REFERENCES `semesters` (`semester_id`),
-  CONSTRAINT `takes_ibfk_3` FOREIGN KEY (`teacher_id`) REFERENCES `teachers` (`teacher_id`)
+  CONSTRAINT `takes_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `takes_ibfk_2` FOREIGN KEY (`semester_id`) REFERENCES `semesters` (`semester_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `takes_ibfk_3` FOREIGN KEY (`teacher_id`) REFERENCES `teachers` (`teacher_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -441,8 +441,8 @@ CREATE TABLE `teacher_teaches` (
   `course_id` char(6) NOT NULL,
   PRIMARY KEY (`teacher_id`,`course_id`),
   KEY `teacher_teaches_ibfk_2` (`course_id`),
-  CONSTRAINT `teacher_teaches_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `teachers` (`teacher_id`),
-  CONSTRAINT `teacher_teaches_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`)
+  CONSTRAINT `teacher_teaches_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `teachers` (`teacher_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `teacher_teaches_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
