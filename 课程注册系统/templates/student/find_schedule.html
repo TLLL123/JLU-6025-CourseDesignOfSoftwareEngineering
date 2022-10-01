@@ -3,169 +3,122 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>学生成绩管理系统</title>
-    <link rel="icon" href="http://v3.bootcss.com/favicon.ico">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>教务管理系统</title>
+       <style type="text/css">
+            .top{
+                /* 设置宽度高度背景颜色 */
+                height: 50px;
+                width:100%;
+                background:rgb(146, 32, 22);
+                position: fixed; /*固定在顶部*/
+                top: 0;/*离顶部的距离为0*/
+            }
+            .top ul{
+                /* 清除ul标签的默认样式 */
+                width: 80%;
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+            .top li {
+                float:left; /* 使li内容横向浮动，即横向排列  */
+                margin-right:50px;  /* 两个li之间的距离*/
+            }
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
+            .top li a{
+               /* 设置链接内容显示的格式*/
+                display: block; /* 把链接显示为块元素可使整个链接区域可点击 */
+                color:white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none; /* 去除下划线 */
+            }
+            .top li a:hover{
+                /* 鼠标选中时背景变为黑色 */
+                background-color: #111;
+            }
+            .top ul li ul{
+                /* 设置二级菜单 */
+                width: auto;
+                background:rgb(255, 255, 255);
+                position: absolute;
+                display: none; /* 默认隐藏二级菜单的内容 */
 
-        li {
-            list-style: none;
-        }
+            }
+            .top ul li ul li{
+                /* 二级菜单li内容的显示 */
+                margin-right:0;
+                float:none;
+                text-align: center;
+            }
+            .top ul li:hover ul{
+                /* 鼠标选中二级菜单内容时 */
+                display: block;
+            }
 
-        a {
-            text-decoration: none;
-            color: white;
-        }
+            .table-responsive {
+                margin-top: 10px;
+                margin-bottom: 25px;
+            }
 
-        .header {
-            position: relative;
-            width: 100%;
-            height: 55px;
-            background-color: black;
-        }
+            .display {
+                margin-top: 10px;
+            }
+            .display .data {
+                width: 150px;
+                height: 25px;
+                background-color: rgb(229,202,185);
+            }
+            .display .title {
+                width: 150px;
+                height: 25px;
+                background-color: rgb(91,80,81);
+                color: white;
+            }
 
-        .left {
-            position: absolute;
-            left: 240px;
-            font-size: 15px;
-            line-height: 55px;
-            color: black;
-            text-align: center;
-        }
+            .schedule {
+                margin-top: 10px;
+            }
+            .schedule .data {
+                width: 150px;
+                height: 30px;
+                background-color: rgb(216,215,218);
+            }
+            .schedule .title {
+                width: 150px;
+                height: 30px;
+                background-color: rgb(49,140,236);
+                color: white;
+            }
 
-        #special{
-            position: absolute;
-            left: 20px;
-            font-size: 20px;
-            line-height: 55px;
-            color: white;
-            text-align: center;
-        }
-
-        .right {
-            position: absolute;
-            right: 160px;
-            line-height: 55px;
-            color: white;
-            text-align: center;
-        }
-
-        .right_right {
-            position: absolute;
-            right: 24px;
-            line-height: 55px;
-            color: white;
-            text-align: center;
-        }
-
-        .leftside {
-            float: left;
-            background-color: rgb(245, 245, 245);
-            /* height: 663px; */
-            width: 230px;
-        }
-
-        .leftside ul {
-
-            height: 663px;
-        }
-
-        .leftside .first {
-            background-color: rgb(66, 139, 202);
-            margin-top: 25px;
-
-        }
-
-        .leftside .first a {
-            color: white;
-
-        }
-
-        .leftside ul li {
-
-            border-bottom: 0.2px solid white;
-
-            font-size: 20px;
-            height: 60px;
-            line-height: 60px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .leftside ul li a {
-            color: black;
-        }
-
-        .container-fluid {
-            position: relative;
-            top: 35px;
-            left: 70px;
-        }
-
-        /* .sub-header {
-            margin-top: 35px;
-        } */
-
-        .table-responsive {
-
-            margin-top: 10px;
-        }
-
-        /* .table-striped {
-
-            width: 1250px;
-        } */
-
-        thead tr th {
-            background-color: white;
-        }
-
-        tbody tr {
-            background-color: rgb(245, 245, 245);
-        }
-
-        tbody tr td select {
-            height: 26px;
-        }
-
-
-        tbody tr td .long {
-            width: 120px;
-            height: 22px;
-        }
-
-        tbody tr td .last {
-            height: 25px;
-            width: 60px;
-        }
-        #contain{
-            width:900px;
-            height:1000px;
-        }
-    </style>
+       </style>
 </head>
 
 
 <body>
-    <div class="header">
-        <span id="special">学 生 操 作 页 面</span>
-        <span class="right">你 好，{{user_info}}同 学!</span>
-        <span class="right_right"><a href="/">退出登陆</a></span>
-    </div>
-    <div class="leftside">
-        <ul>
-            <li onclick="window.location.href='/choose_course'"><a >学生选课</a></li>
-            <li onclick="window.location.href='/drop_course'"><a >学生退课</a></li>
-            <li onclick="window.location.href='/find_grades'"><a >成绩查询</a></li>
-            <li class="first" onclick="window.location.href='/find_schedule'"><a >课表查询</a></li>
-            <li onclick="window.location.href='/find_available'"><a >空教室查询</a></li>
-        </ul>
-    </div>
+    <div class="top">
+               <center>
+                    <ul>
+                        <li>
+                            <a href="#">课程操作</a>
+                            <ul>
+                                <li style="background-color: rgb(146, 32, 22)"><a href="/choose_course">学生选课</a></li>
+                                <li style="background-color: rgb(146, 32, 22)"><a href="/drop_course">学生退课</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="/find_grades">成绩查询</a></li>
+                        <li><a href="#">课表查询</a></li>
+                        <li><a href="/find_available">空教室查询</a></li>
+                        <li><b><a style="color: lemonchiffon">{{user_info}}同学，你好！</a></b></li>
+                        <li><a href="/">退出登陆</a><li>
+                    </ul>
+                </center>
+            </div>
+
+            &nbsp;
+
     <div class="container-fluid">
         <h1 class="sub-header">学 生 课 表 查 询 </h1>&nbsp;&nbsp;
         <hr>
@@ -187,9 +140,9 @@
                 </tbody>
             </table>
         </div>
-        <table class="curriculumTable">
+        <table class="display">
             <tbody>
-                <tr>
+                <tr class="title">
                     <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
                     <th class="head">星期一</th>
                     <th class="head">星期二</th>
@@ -200,7 +153,7 @@
                     <th class="head">星期日</th>
                 </tr>
 
-                <tr>
+                <tr class="data">
                     <th class="left">第一节</th>
                     <td><pre>{{arr[1]}}</pre></td>
                     <td><pre>{{arr[12]}}</pre></td>
@@ -212,7 +165,7 @@
                     <th><br><br><br></th>
                 </tr>
 
-                <tr>
+                <tr class="data">
                     <th class="left">第二节</th>
                      <td><pre>{{arr[2]}}</pre></td>
                      <td><pre>{{arr[13]}}</pre></td>
@@ -224,7 +177,7 @@
                     <th><br><br><br></th>
                 </tr>
 
-                <tr>
+                <tr class="data">
                     <th class="left">第三节</th>
                     <td><pre>{{arr[3]}}</pre></td>
                     <td><pre>{{arr[14]}}</pre></td>
@@ -236,7 +189,7 @@
                     <th><br><br><br></th>
                 </tr>
 
-                <tr>
+                <tr class="data">
                     <th class="left">第四节</th>
                     <td><pre>{{arr[4]}}</pre></td>
                     <td><pre>{{arr[15]}}</pre></td>
@@ -248,7 +201,7 @@
                     <th><br><br><br></th>
                 </tr>
 
-                <tr>
+                <tr class="data">
                     <th class="left">第五节</th>
                     <td><pre>{{arr[5]}}</pre></td>
                     <td><pre>{{arr[16]}}</pre></td>
@@ -260,7 +213,7 @@
                     <th><br><br><br></th>
                 </tr>
 
-                <tr>
+                <tr class="data">
                     <th class="left">第六节</th>
                     <td><pre>{{arr[6]}}</pre></td>
                     <td><pre>{{arr[17]}}</pre></td>
@@ -272,7 +225,7 @@
                     <th><br><br><br></th>
                 </tr>
 
-                <tr>
+                <tr class="data">
                     <th class="left">第七节</th>
                     <td><pre>{{arr[7]}}</pre></td>
                     <td><pre>{{arr[18]}}</pre></td>
@@ -284,7 +237,7 @@
                     <th><br><br><br></th>
                 </tr>
 
-                <tr>
+                <tr class="data">
                     <th class="left">第八节</th>
                     <td><pre>{{arr[8]}}</pre></td>
                     <td><pre>{{arr[19]}}</pre></td>
@@ -296,7 +249,7 @@
                     <th><br><br><br></th>
                 </tr>
 
-                <tr>
+                <tr class="data">
                     <th class="left">第九节</th>
                     <td><pre>{{arr[9]}}</pre></td>
                     <td><pre>{{arr[20]}}</pre></td>
@@ -307,7 +260,7 @@
                     <td><pre>{{arr[75]}}</pre></td>
                     <th><br><br><br></th>
                 </tr>
-                <tr>
+                <tr class="data">
                     <th class="left">第十节</th>
                     <td><pre>{{arr[10]}}</pre></td>
                     <td><pre>{{arr[21]}}</pre></td>
@@ -318,7 +271,7 @@
                     <td><pre>{{arr[76]}}</pre></td>
                     <th><br><br><br></th>
                 </tr>
-                <tr>
+                <tr class="data">
                     <th class="left">十一节</th>
                     <td><pre>{{arr[11]}}</pre></td>
                     <td><pre>{{arr[22]}}</pre></td>
