@@ -1189,8 +1189,33 @@ def delete_student():
                                  insert_result=insert_result, results=results)
 
 @app.route('/close_register', methods=['GET', "POST"]) #关闭注册，这个很有意思
-def close_register():
-    return flask.render_template('administrator/close_register.html')
+def close_register():#关闭注册，首先得禁止学生进行选课，，这个体现在学生那一部分
+    search_result = '' #记录查询结果
+    results = [] #记录表单
+    results2= []
+    if flask.request.method == 'POST':
+            try:
+                # 信息存入数据库
+                # sql = "call update_info(%s, %s, %s);"
+                sql1 = "select a.student_id,a.name,sum(tuition) from students as a,student_takes as b,takes as c,courses as d where a.student_id=b.student_id and b.takes_id=c.takes_id and c.course_id = d.course_id group by student_id;"
+                cursor.execute(sql1)
+                # cursor.execute(sql, (teacher_id, phone, email))
+                results = cursor.fetchall()
+                sql2="select a.student_id,a.name,c.takes_id,c.course_id,c.semester_id,c.teacher_id,d.name as '课程名',d.tuition from students as a,student_takes as b,takes as c,courses as d where a.student_id=b.student_id and b.takes_id=c.takes_id and c.course_id = d.course_id;"
+                cursor.execute(sql2)
+                results2=cursor.fetchall()
+                search_result = "关闭注册成功,并显示各个学生应当提交的金额！"
+            except Exception as err:
+                search_result = "关闭注册失败"
+                pass
+            db.commit()
+            # POST显示数据
+            # sql_list = "select * from teachers where teacher_id=(%s);"
+            # cursor.execute(sql_list, teacher_id)
+            # results = cursor.fetchall()
+            # print(results)
+
+    return flask.render_template('administrator/close_register.html', search_result=search_result, results=results,results2=results2)
 
 # 启动服务器
 app.debug = True
