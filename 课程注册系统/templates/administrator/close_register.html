@@ -161,69 +161,8 @@
         </ul>
     </div>
 
-   <div class="container-fluid">
-       <h1 class="sub-header">关闭注册</h1>&nbsp;&nbsp;
-        <hr>
-        <br>
-        <span>点击即可关闭注册并且展示学生缴费名单：</span>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <tr>
-                    <form action="" method="post">
-<!--                        <td>教授id：<input class="long" name="teacher_id" type="text" /></td>-->
-                        <td><input class="last" type="submit" value="关闭注册" /></td>
-                    </form>
-                </tr>
-                <tr><td><span>结果:{{search_result}}</span></td></tr>
-            </table>
-            <br>
-            <span>学生缴费简洁表</span>
-            <br>
-            <table class="display">
-                <tr>
-                     <td class="title"  align="center" >学号</td>
-                    <td class="title"  align="center">姓名</td>
-                    <td class="title" align="center">班级号</td>
-                </tr>
-                {% for result in results %}
-                <tr>
-                    <td class="data">{{result[0]}}</td>
-                    <td class="data">{{result[1]}}</td>
-                    <td class="data">{{result[2]}}</td
-                </tr>
-                {% endfor %}
-            </table>
-             <br>
-            <span>学生缴费详细表</span>
-            <table class="display">
-                <tr>
-                     <td class="title"  align="center" >学号</td>
-                    <td class="title"  align="center">姓名</td>
-                    <td class="title" align="center">选课号</td>
-                    <td class="title"  align="center" >课程号</td>
-                    <td class="title"  align="center">学期号</td>
-                    <td class="title" align="center">老师号</td>
-                    <td class="title"  align="center" >课程名</td>
-                    <td class="title"  align="center">课程费</td>
-                    <td class="title" align="center">选课号</td>
-
-                </tr>
-                {% for result2 in results2 %}
-                <tr>
-                    <td class="data">{{result2[0]}}</td>
-                    <td class="data">{{result2[1]}}</td>
-                    <td class="data">{{result2[2]}}</td>
-                     <td class="data">{{result2[3]}}</td>
-                    <td class="data">{{result2[4]}}</td>
-                    <td class="data">{{result2[5]}}</td>
-                     <td class="data">{{result2[6]}}</td>
-                    <td class="data">{{result2[7]}}</td>
-                    <td class="data">{{result2[8]}}</td>
-
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+    <div class="container-fluid">
+        <h1 class="sub-header">关闭注册</h1>&nbsp;&nbsp;
     </div>
 
 </body>
