@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>教务管理系统</title>
+       <title>课程注册系统</title>
+       <link rel="icon" href="static/images/icon-6025.png">
        <style type="text/css">
             .top{
                 /* 设置宽度高度背景颜色 */
@@ -132,12 +133,11 @@
                     <tr>
                         <form action="" method="post">
 <!--                            <td><input class="long" name="student_id" type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>-->
-                            <td><input class="long" name="takes_id" type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            </td>
+                            <td><input class="long" name="takes_id" type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <!--                            <td><input class="long" name="student_mail"-->
 <!--                                    type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
 <!--                            </td>-->
-                            <td><input class="last" type="submit" value="提交" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td><input class="last" type={{submit_switch}} value="提交" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
                             <td><span>提交结果:{{insert_result}}</span></td>
                         </form>
                     </tr>
