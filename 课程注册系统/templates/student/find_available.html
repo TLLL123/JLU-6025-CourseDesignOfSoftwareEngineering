@@ -108,9 +108,9 @@
                                 <li style="background-color: rgb(146, 32, 22)"><a href="/drop_course">学生退课</a></li>
                             </ul>
                         </li>
-                        <li><a href="/find_grades">成绩查询</a></li>
+                        <li><a href="#">成绩查询</a></li>
                         <li><a href="/find_schedule">课表查询</a></li>
-                        <li><a href="#">空教室查询</a></li>
+                        <li><a href="/find_available">空教室查询</a></li>
                         <li><b><a style="color: lemonchiffon">{{user_info}}同学，你好！</a></b></li>
                         <li><a href="/">退出登陆</a><li>
                     </ul>
@@ -120,7 +120,7 @@
             &nbsp;
 
     <div class="container-fluid">
-        <h1 class="sub-header">空 教 室 查 询 </h1>&nbsp;&nbsp;
+        <h1 class="sub-header">学 生 成 绩 查 询 </h1>&nbsp;&nbsp;
         <hr>
         <div class="table-responsive">
             <table class="table table-striped" cellspaing="10">
@@ -130,62 +130,30 @@
                 <tbody class="display">
                     <tr>
                         <form action="" method="post">
-                            <tr>
-                                <td><label for="#">请选择查询的学期</label>&nbsp;&nbsp;&nbsp;</td>
-                                <td><select name="selected_one">
-                                        {% for chose in choses %}
-                                        <option value={{chose[0]}} selected="selected">{{chose[0]}}</option>
-                                        {% endfor %}
-                                    </select></td>&nbsp;
-                            </tr>
-                            <tr>
-                            <td><label for="#">请选择查询的周数</label>&nbsp;&nbsp;&nbsp;</td>
-                            <td><select name="selected_two">
-                                    {% for chose in choses_two %}
-                                    <option value={{chose}} selected="selected">{{chose}}</option>
+                            <td><label for="#">请选择查询的学期</label>&nbsp;&nbsp;&nbsp;</td>
+                            <td><select name="selected_one">
+                                    {% for chose in choses %}
+                                    <option value={{chose[0]}} selected="selected">{{chose[1]}}{{chose[2]}}</option>
+<!--                                    <option value="姓名">{{chose[0]}}</option>-->
+<!--                                    <option value="课程号">{{chose[0]}}</option>-->
+<!--                                    <option value="所在班级">{{chose[0]}}</option>-->
                                     {% endfor %}
                                 </select></td>&nbsp;
-                            </tr>
-                            <tr>
-                            <td><label for="#">请选择查询的星期</label>&nbsp;&nbsp;&nbsp;</td>
-                            <td><select name="selected_three">
-                                    {% for chose in choses_three %}
-                                    <option value={{chose}} selected="selected">{{chose}}</option>
-                                    {% endfor %}
-                                </select></td>&nbsp;
-                            </tr>
-                    <tr>
-                            <td><label for="#">请选择查询的课程开始节数</label>&nbsp;&nbsp;&nbsp;</td>
-                            <td><select name="selected_four">
-                                    {% for chose in choses_four %}
-                                    <option value={{chose}} selected="selected">{{chose}}</option>
-                                    {% endfor %}
-                                </select></td>&nbsp;
-                    </tr>
-                    <tr>
-                            <td><label for="#">请选择查询的课程结束节数</label>&nbsp;&nbsp;&nbsp;</td>
-                            <td><select name="selected_five">
-                                    {% for chose in choses_five %}
-                                    <option value={{chose}} selected="selected">{{chose}}</option>
-                                    {% endfor %}
-                                </select></td>&nbsp;
-                    </tr>
-                            <br>
 <!--                            <td><input class="long" type="text" name="query"></td>-->
                             <td><input class="last" type="submit" value="查询" /></td>
                             <td><span>查询结果:{{query_result}}</span></td>
                         </form>
                     </tr>
                     <tr class="title">
-                        <td>教学楼名称</td>
-                        <td>教室号</td>
-<!--                        <td>教学楼编号</td>-->
+                        <td>学生学号</td>
+                        <td>课程号</td>
+                        <td>成绩</td>
                     </tr>
                     {% for result in results %}
                     <tr class="data">
-                        <td>{{result[1]}}</td>
                         <td>{{result[0]}}</td>
-<!--                        <td>{{result[2]}}</td>-->
+                        <td>{{result[1]}}</td>
+                        <td>{{result[2]}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
