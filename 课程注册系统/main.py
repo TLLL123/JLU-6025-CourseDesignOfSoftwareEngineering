@@ -3,18 +3,46 @@ from flask import url_for  # 进行网页跳转
 import os  # 用于操作系统文件的依赖库
 import re  # 引入正则表达式对用户输入进行限制
 import pymysql  # 连接数据库
+import xlrd2
+
+worksheet = xlrd2.open_workbook('databaseConfig.xls')
+sheet_names= worksheet.sheet_names()
+sheet_name=sheet_names[0]# xls文件中的第一页表格
+sheet = worksheet.sheet_by_name(sheet_name)
+rows = sheet.nrows # 获取行数
+cols = sheet.ncols # 获取列数，尽管没用到
+databaseParameter=[0,0,0,0,0,0]
+
+for i in range(6):
+    databaseParameter[i]=sheet.col_values(i)[1]
 
 # 初始化
 app = flask.Flask(__name__)
+db=[]
 # 初始化数据库连接
 # 使用pymysql.connect方法连接本地mysql数据库
-# db = pymysql.connect(host='localhost', port=3306, charset='utf8', database="my_se", user='root', password='wxh722019')
-db = pymysql.connect(host='47.95.148.117', port=3306, charset='utf8', database="wxh_database", user='wxh', password='jlu12345')
-# 连接服务器中的数据库
-# db = pymysql.connect(host='47.95.148.117', port=3306, charset='utf8', database="test",password='Jlu12345',user='dqy')
+# db = pymysql.connect(host='localhost', port=3306, charset='utf8', database="course_registration_system2", user='root', password='123456')
+
+#连接服务器中的远程数据库
+try:
+    db = pymysql.connect(host=databaseParameter[0],
+                         port=int(databaseParameter[1]),
+                         charset=databaseParameter[2],
+                         database=databaseParameter[3],
+                         user=databaseParameter[4],
+                         password=databaseParameter[5])
+except Exception as errorMsg:
+    print("\33[31m数据库连接失败，请确保数据库已打开，且数据库配置文件中的参数正确，再尝试重新连接！\33[36m")
+    print(errorMsg)
+    exit()
+
 # 操作数据库，获取db下的cursor对象
 cursor = db.cursor()
+
+#全局变量
 users = []# 存的是用户名
+f2 = open("closeRegisterFlag.txt", encoding="utf-8", mode='r+')
+f2.write("0")#初始是未关闭注册，仍允许选课
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -27,7 +55,7 @@ def login():
         pwd = flask.request.values.get("pwd", "")
         print(user_id,pwd)
         # print(user_id)
-        if user_id != None and pwd != None:  # 与数据库中数据进行比较
+        if user_id != '' and pwd != '':  # 与数据库中数据进行比较
             msg = '用户名或密码错误'
             sql = "select * from login where name='" + user_id + "' and passwd='" + pwd + "';"
             cursor.execute(sql)
@@ -154,6 +182,16 @@ def choose_course():
             user_info = user
     else:
         user_info = ''
+
+    #根据是否关闭注册，选择是否允许提交选课
+    f1 = open("closeRegisterFlag.txt", encoding="utf-8", mode='r')
+    if f1.read()=='0':
+        submit_switch = 'submit'  # 未关闭注册，仍允许选课
+        print("未关闭注册")
+    else:
+        submit_switch = ''
+        print("已关闭注册")
+
     # 获取显示管理员数据信息(GET方法的时候显示数据)
     if flask.request.method == 'GET':
         sql_list = "select ta.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition from takes ta inner join sections se inner join courses co inner join teachers te where ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id;"
@@ -198,7 +236,7 @@ def choose_course():
             print(insert_result)
         except Exception as err:
             print(err)
-            insert_result = "学生信息插入失败"
+            insert_result = "选课信息插入失败"
             print(insert_result)
             pass
         db.commit()
@@ -206,7 +244,7 @@ def choose_course():
         sql_list = "select ta.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition from takes ta inner join sections se inner join courses co inner join teachers te where ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id;"
         cursor.execute(sql_list)
         results = cursor.fetchall()
-    return flask.render_template('student/choose_course.html', insert_result=insert_result, user_info=user_info, results=results)
+    return flask.render_template('student/choose_course.html', submit_switch=submit_switch,insert_result=insert_result, user_info=user_info, results=results)
 
 @app.route('/drop_course', methods=['GET', "POST"])
 def drop_course():
@@ -224,12 +262,21 @@ def drop_course():
             user_info = user
     else:
         user_info = ''
+
+    # 根据是否关闭注册，选择是否允许提交退课
+    f1 = open("closeRegisterFlag.txt", encoding="utf-8", mode='r')
+    if f1.read() == '0':
+        submit_switch = 'submit'  # 未关闭注册，仍允许选课
+        print("未关闭注册")
+    else:
+        submit_switch = ''
+        print("已关闭注册")
+
     # 获取显示管理员数据信息(GET方法的时候显示数据)
     if flask.request.method == 'GET':
         sql_list = "select stu.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition  from student_takes stu inner join takes ta inner join sections se inner join courses co inner join teachers te where stu.student_id=%s and stu.takes_id=ta.takes_id and ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id ;"
         cursor.execute(sql_list,user_id)
         results = cursor.fetchall()
-
 
     if flask.request.method == 'POST':
         # 获取输入的学生信息
@@ -275,7 +322,7 @@ def drop_course():
         sql_list = "select stu.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition  from student_takes stu inner join takes ta inner join sections se inner join courses co inner join teachers te where stu.student_id=%s and stu.takes_id=ta.takes_id and ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id ;"
         cursor.execute(sql_list, user_id)
         results = cursor.fetchall()
-    return flask.render_template('student/drop_course.html', insert_result=insert_result, user_info=user_info, results=results)
+    return flask.render_template('student/drop_course.html', submit_switch=submit_switch, insert_result=insert_result, user_info=user_info, results=results)
 
 @app.route('/find_grades', methods=['GET', 'POST'])
 def find_grades():
@@ -916,7 +963,6 @@ def delete_professor():
     return flask.render_template('administrator/delete_professor.html', search_result=search_result,
                                  insert_result=insert_result, results=results)
 
-
 @app.route('/add_student', methods=['GET', "POST"])
 def addSections():
     search_result = ''
@@ -1204,7 +1250,11 @@ def close_register():#关闭注册，首先得禁止学生进行选课，，这�
                 sql2="select a.student_id,a.name,c.takes_id,c.course_id,c.semester_id,c.teacher_id,d.name as '课程名',d.tuition from students as a,student_takes as b,takes as c,courses as d where a.student_id=b.student_id and b.takes_id=c.takes_id and c.course_id = d.course_id;"
                 cursor.execute(sql2)
                 results2=cursor.fetchall()
-                search_result = "关闭注册成功,并显示各个学生应当提交的金额！"
+                search_result = "关闭注册成功,并显示各个学生应当提交的金额！已禁止学生端的选课、退课功能"
+
+                f2 = open("closeRegisterFlag.txt", encoding="utf-8", mode='r+')
+                f2.write("1")
+
             except Exception as err:
                 search_result = "关闭注册失败"
                 pass
@@ -1216,6 +1266,11 @@ def close_register():#关闭注册，首先得禁止学生进行选课，，这�
             # print(results)
 
     return flask.render_template('administrator/close_register.html', search_result=search_result, results=results,results2=results2)
+
+#访问不存在的网页地址时显示错误信息
+@app.errorhandler(404)
+def not_found(e):
+    return flask.render_template('404.html')
 
 # 启动服务器
 app.debug = True
