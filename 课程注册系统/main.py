@@ -783,7 +783,7 @@ def course():
     # POST显示数据
     results = ()
     for each in all_courses_id:
-        sql_list = "select c.course_id, c.name, buildings.name, classrooms.name, max_num, classrooms.classroom_id, capacity\
+        sql_list = "select c.course_id, c.name, buildings.name, classrooms.name, max_num, current_num, classrooms.classroom_id, capacity\
                     from courses as c, classrooms, buildings, sections as s, takes as t\
                     where classrooms.building_id=buildings.building_id and t.course_id=c.course_id and c.course_id=%s and t.teacher_id=%s and s.takes_id=t.takes_id and classrooms.classroom_id=s.classroom_id;  "
         cursor.execute(sql_list, (each[0], teacher_id))#传递课程号和老师工号
@@ -797,6 +797,16 @@ def course():
         classroom_id = flask.request.values.get("classroom_id", "")
         max_num = flask.request.values.get("max_num", "")
         print(course_id, classroom_id, max_num)
+
+        if int(max_num)>10:
+            insert_result = "课程最多允许10人选修！"
+            return flask.render_template('teacher/course.html', insert_result=insert_result, user_info=user_info,
+                                         results=results)
+        if int(max_num)<3:
+            insert_result = "课程最少得有3人选修！"
+            return flask.render_template('teacher/course.html', insert_result=insert_result, user_info=user_info,
+                                         results=results)
+
         try:
             # 信息存入数据库
             sql = "call update_course(%s, %s, %s, %s);"
@@ -815,7 +825,7 @@ def course():
         # POST显示数据
         results=()
         for each in all_courses_id:
-            sql_list = "select c.course_id, c.name, buildings.name, classrooms.name, max_num, classrooms.classroom_id, capacity\
+            sql_list = "select c.course_id, c.name, buildings.name, classrooms.name, max_num, current_num, classrooms.classroom_id, capacity\
                         from courses as c, classrooms, buildings, sections as s, takes as t\
                         where classrooms.building_id=buildings.building_id and t.course_id=c.course_id and c.course_id=%s and t.teacher_id=%s and s.takes_id=t.takes_id and classrooms.classroom_id=s.classroom_id;  "
             cursor.execute(sql_list, (each[0], teacher_id))
