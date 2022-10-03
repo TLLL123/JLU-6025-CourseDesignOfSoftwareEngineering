@@ -3,10 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>课程注册系统</title>
-       <link rel="icon" href="static/images/icon-6025.png">
-       <style type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教务管理系统</title>
+    <link rel="icon" href="static/images/icon-6025.png">
+    <style type="text/css">
             .top{
                 /* 设置宽度高度背景颜色 */
                 height: 50px;
@@ -78,6 +78,17 @@
                 background-color: rgb(91,80,81);
                 color: white;
             }
+            .display .data1 {
+                width: 150px;
+                height: 25px;
+                background-color: rgb(216,215,218);
+            }
+            .display .title1 {
+                width: 150px;
+                height: 25px;
+                background-color: rgb(49,140,236);
+                color: white;
+            }
 
             .schedule {
                 margin-top: 10px;
@@ -99,80 +110,68 @@
 
 <body>
     <div class="top">
-               <center>
+       <center>
+            <ul>
+                <li><a href="/teacher">个人信息查看</a></li>
+                <li><a href="/course">课程信息修改</a></li>
+                <li><a href="/grade">成绩信息录入</a></li>
+                <li>
+                    <a href="#">课程管理</a>
                     <ul>
-                        <li>
-                            <a href="#">课程操作</a>
-                            <ul>
-                                <li style="background-color: rgb(146, 32, 22)"><a href="#">学生选课</a></li>
-                                <li style="background-color: rgb(146, 32, 22)"><a href="/drop_course">学生退课</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="/find_grades">成绩查询</a></li>
-                        <li><a href="/find_schedule">课表查询</a></li>
-                        <li><a href="/find_available">空教室查询</a></li>
-                        <li><b><a style="color: lemonchiffon">{{user_info}}同学，你好！</a></b></li>
-                        <li><a href="/">退出登陆</a><li>
+                        <li style="background-color: rgb(146, 32, 22)"><a href="#">选择教授课程</a></li>
+                        <li style="background-color: rgb(146, 32, 22)"><a href="/delete_teach_course">删除教授课程</a></li>
                     </ul>
-                </center>
-            </div>
+                </li>
+                <li><b><a style="color: lemonchiffon">{{user_info}}老师，你好！</a></b></li>
+                <li><a href="/">退出登陆</a><li>
+            </ul>
+        </center>
+    </div>
 
-            &nbsp;
+    &nbsp;
 
     <div class="container-fluid">
-        <h1 class="sub-header">选课页面</h1>&nbsp;&nbsp;
+        <h1 class="sub-header">选 择 教 授 课 程</h1>
         <hr>
+        <span>请输入课程id：</span>
         <div class="table-responsive">
             <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>开课编号</th>
-                    </tr>
-                </thead>
-                <tbody class="display">
                     <tr>
                         <form action="" method="post">
-<!--                            <td><input class="long" name="student_id" type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>-->
-                            <td><input class="long" name="takes_id" type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<!--                            <td><input class="long" name="student_mail"-->
-<!--                                    type="text" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
-<!--                            </td>-->
-                            <td><input class="last" type={{submit_switch}} value="提交" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                            <td><span>提交结果:{{insert_result}}</span></td>
+                            <td>课程id：<input class="short" name="week" type="text" /></td>
+                            <td><input class="last" type="submit" value="提交" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
                         </form>
                     </tr>
-                    <tr class="title">
-                        <td>开课编号</td>
-                        <td>课程名称</td>
-                        <td>任课老师</td>
-                        <td>最大容量</td>
-                        <td>当前容量</td>
-                        <td>起始周</td>
-                        <td>结束周</td>
-                        <td>起始节</td>
-                        <td>结束节</td>
-                        <td>课程学费</td>
-                    </tr>
-                    {% for result in results %}
-                    <tr class="data">
-                        <td>{{result[0]}}</td>
-                        <td>{{result[1]}}</td>
-                        <td>{{result[2]}}</td>
-                        <td>{{result[3]}}</td>
-                        <td>{{result[4]}}</td>
-                        <td>{{result[5]}}</td>
-                        <td>{{result[6]}}</td>
-                        <td>{{result[7]}}</td>
-                        <td>{{result[8]}}</td>
-                        <td>{{result[9]}}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+                    <tr><td><span>提交结果:{{insert_result}}</span></td></tr>
+            </table>
+            <table style="float:left;" class="display">
+                <tr>
+                    <td class="title">课程id</td>
+                    <td class="title">课程名</td>
+                    <td class="title">总课时</td>
+                </tr>
+                {% for result in results %}
+                <tr>
+                    <td class="data">{{result[0]}}</td>
+                    <td class="data">{{result[1]}}</td>
+                    <td class="data">{{result[2]}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <table style="float:none;" class="display">
+                <tr>
+                    <td class="title1">已选教授课程</td>
+                </tr>
+                {% for result in results_course %}
+                <tr>
+                    <td class="data1">{{result[0]}}</td>
+                </tr>
+                {% endfor %}
             </table>
 
         </div>
     </div>
-
 
 </body>
 
