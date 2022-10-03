@@ -79,6 +79,55 @@ def addMajorClass():
                         db.commit()
     print('专业班级添加完毕！')
 
+def addCourse():
+    num = 11
+    mCourse = []
+    gCourse = ['微积分A2', '近代史', '思想政治', '微积分A3', '军事理论']
+    tuition1 = ['1500', '2100', '2400', '3600', '1200']
+    sql = "insert into courses(course_id,name,credit,hours,type,tuition) values(%s,%s,%s,%s,%s,%s)"
+    sql_1 = "insert into majors_courses(major_id,course_id,grade) values(%s,%s,%s)"
+    with open("course.txt", encoding="utf_8") as file:
+        lines = file.readlines()
+        for line in lines:  # 得到left和right
+            line = str(line).replace("\n", "")
+            pos = line.split(" ", 10)
+            mCourse.append(pos)
+    for i in mCourse:
+        for j in i:
+            co_id = '000'
+            m_id = '00'
+            if num-4 < 10:
+                m_id += '00' + str(num-4)
+            elif num-4 < 100:
+                m_id += '0' + str(num-4)
+            else:
+                m_id += str(num-4)
+            if num < 100:
+                co_id += '0' + str(num)
+            else:
+                co_id += str(num)
+            num+=1
+            cursor.execute(sql, (co_id, j, '3', '32', '必修课', random.choice(tuition1)))
+            db.commit()
+            cursor.execute(sql_1, (m_id, co_id, '1'))
+            db.commit()
+    for i in gCourse:
+        co_id = '000' + str(num)
+        num+=1
+        cursor.execute(sql, (co_id, i, '3', '32', '必修课', random.choice(tuition1)))
+        db.commit()
+        for j in range(98):
+            m_id = '00'
+            if j+7 < 10:
+                m_id += '00' + str(j+7)
+            elif j+7 < 100:
+                m_id += '0' + str(j+7)
+            else:
+                m_id += str(j+7)
+            cursor.execute(sql_1, (m_id, co_id, '1'))
+            db.commit()
+    print('课程添加完毕！')
+
 def addStudent(num):
     # 随机名字
     name = random.choice(first_name)
@@ -91,3 +140,4 @@ def addStudent(num):
 
 # addCampus()
 # addMajorClass()
+# addCourse()
