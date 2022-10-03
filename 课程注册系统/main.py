@@ -1494,6 +1494,11 @@ def close_register():#关闭注册，首先得禁止学生进行选课，，这�
                 f2 = open("closeRegisterFlag.txt", encoding="utf-8", mode='r+')
                 f2.write("1")
 
+                sql3 = "delete from takes where current_num<3"
+                cursor.execute(sql3)
+                delete_result = cursor.fetchall()
+                print(delete_result)
+
             except Exception as err:
                 search_result = "关闭注册失败"
                 pass
