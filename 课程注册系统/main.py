@@ -30,10 +30,24 @@ try:
                          charset=databaseParameter[2],
                          database=databaseParameter[3],
                          user=databaseParameter[4],
-                         password=databaseParameter[5])
+                         password=databaseParameter[5],
+                         connect_timeout=1,
+                         read_timeout=1,
+                         write_timeout=1)
 except Exception as errorMsg:
-    print("\33[31m数据库连接失败，请确保数据库已打开，且数据库配置文件中的参数正确，再尝试重新连接！\33[36m")
-    print(errorMsg)
+    #print("\33[31m数据库连接失败，请确保数据库已打开，且数据库配置文件中的参数正确，再尝试重新连接！\33[36m")
+    #print(errorMsg)
+    #print(type(errorMsg))
+    if errorMsg.args[0]==1045:
+        print("\33[31m数据库连接失败，请确保数据库配置文件中的参数正确，再尝试重新连接！\33[36m")
+        print(errorMsg)
+    elif errorMsg.args[0]==2013:
+        print("\33[31m数据库连接失败，请确保数数据库已打开，再尝试重新连接！\33[36m")
+        print(errorMsg)
+    else:
+        print("\33[31m数据库连接失败，请确保相关配置正确，再尝试重新连接！\33[36m")
+        print(errorMsg)
+
     exit()
 
 # 操作数据库，获取db下的cursor对象
@@ -167,7 +181,6 @@ def conf(stu_id,takes_id):
     return False
 
 #学生
-
 @app.route('/choose_course', methods=['GET', "POST"])
 def choose_course():
     global user_id
@@ -269,7 +282,6 @@ def choose_course():
 
     return flask.render_template('student/choose_course.html', submit_switch=submit_switch,insert_result=insert_result, user_info=user_info, results=results, primary_course=primary_course, alternate_course=alternate_course)
 
-
 # @app.route('/choose_course', methods=['GET', "POST"])
 # def choose_course():
 #     global user_id
@@ -352,8 +364,6 @@ def choose_course():
 #         cursor.execute(sql_list)
 #         results = cursor.fetchall()
 #     return flask.render_template('student/choose_course.html', submit_switch=submit_switch,insert_result=insert_result, user_info=user_info, results=results)
-
-
 @app.route('/change_course', methods=['GET', "POST"])
 def change_course():
     global user_id
@@ -464,7 +474,6 @@ def change_course():
         results_2 = cursor.fetchall()
 
     return flask.render_template('student/change_course.html', submit_switch=submit_switch, insert_result=insert_result, user_info=user_info, results_1=results_1, results_2=results_2)
-
 
 @app.route('/drop_course', methods=['GET', "POST"])
 def drop_course():
@@ -799,7 +808,7 @@ def course():
             insert_result = "修改信息失败"
             pass
         if insert_result != "成功修改课程信息":
-            return flask.render_template('course.html', insert_result=insert_result, user_info=user_info,
+            return flask.render_template('teacher/course.html', insert_result=insert_result, user_info=user_info,
                                          results=results)
         db.commit()
 
@@ -858,7 +867,7 @@ def grade():
             insert_result = "学生成绩录入失败"
             pass
         if insert_result != "成功录入学生成绩":
-            return flask.render_template('grade.html', insert_result=insert_result, user_info=user_info, results=results)
+            return flask.render_template('teacher/grade.html', insert_result=insert_result, user_info=user_info, results=results)
         db.commit()
         # POST获取数据
         sql_list = "call get_stu_scores(%s);"
@@ -1184,7 +1193,7 @@ def delete_professor():
                                  insert_result=insert_result, results=results)
 
 @app.route('/add_student', methods=['GET', "POST"])
-def addSections():
+def add_student():
     search_result = ''
     insert_result = ''
     results = []
@@ -1491,6 +1500,11 @@ def close_register():#关闭注册，首先得禁止学生进行选课，，这�
 @app.errorhandler(404)
 def not_found(e):
     return flask.render_template('404.html')
+
+#出现异常，代码崩溃时显示精简信息
+@app.errorhandler(500)
+def internal_server_error(e):
+    return flask.render_template('500.html')
 
 # 启动服务器
 app.debug = True
