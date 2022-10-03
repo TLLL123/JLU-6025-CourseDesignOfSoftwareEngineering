@@ -128,6 +128,21 @@ def addCourse():
             db.commit()
     print('课程添加完毕！')
 
+def addSem():
+    sql = "insert into semesters(semester_id,school_year,start_date,total_weeks,season) values(%s,%s,%s,%s,%s)"
+    num = 4
+    s_id = '0000'
+    s_year = ['2019','2020','2020','2021']
+    s_date = ['09-01','03-01']
+    season = ['秋季', '春季']
+    for i in range(4):
+        s_id1 = s_id + str(num)
+        num += 1
+        s_date1 = s_year[i] + '-' + s_date[i%2]
+        cursor.execute(sql, (s_id1, s_year[i], s_date1, '20', season[i%2]))
+        db.commit()
+    print("学期添加成功！")
+
 def addStudent(num):
     # 随机名字
     name = random.choice(first_name)
@@ -141,3 +156,4 @@ def addStudent(num):
 # addCampus()
 # addMajorClass()
 # addCourse()
+addSem()
