@@ -1,5 +1,6 @@
 import pymysql  # 连接数据库
 import random
+import radar
 
 db = pymysql.connect(host='47.95.148.117', port=3306, charset='utf8', database="course_registration_system",
                      user='root', password='Jlu123456')
@@ -143,17 +144,36 @@ def addSem():
         db.commit()
     print("学期添加成功！")
 
-def addStudent(num):
+def addClassroom():
+    sql = "insert into classrooms(classroom_id,name,building_id,type,capacity) values(%s,%s,%s,%s,%s)"
+    build = ['00001','00002','00003','00004','00005']
+    c_id1 = '0001'
+    name1 = '10'
+    for i in range(9):
+        c_id = c_id1 + str(i+1)
+        name = name1 + str(i+1)
+        cursor.execute(sql, (c_id, name, random.choice(build), '小教室', '10'))
+        db.commit()
+    print('教室添加完毕！')
+
+def addStudent(class_id,num,name_num):
+    sql = "insert into students(student_id,name,state,class_id,gender,birthday,phone,mail,social_security_number,status,graduation_date) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     # 随机名字
+    gend = ['男','女']
+    birth = radar.random_date("2000-01-01", "2970-01-01")
+    phone =
     name = random.choice(first_name)
-    for i in range(num):
+    for i in range(name_num):
         head = random.randint(0xb0, 0xf7)
         body = random.randint(0xa1, 0xfe)
         val = f'{head:x} {body:x}'
         str = bytes.fromhex(val).decode('gb2312')
         name += str
+    print(name)
 
 # addCampus()
 # addMajorClass()
 # addCourse()
-addSem()
+# addSem()
+# addClassroom()
+addStudent(1)
