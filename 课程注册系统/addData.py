@@ -8,7 +8,7 @@ first_name = ["王", "李", "张", "刘", "赵", "蒋", "孟", "陈", "徐", "�
 
 def addCampus():
     sql = "insert into campus(campus_id,name) values(%s,%s)"
-    college1 = ['哲学社会学院', '文学院', '考古学院', '体育学院', '公共外语教育学院', '经济学院']
+    college1 = ['哲学社会学院', '文学院', '考古学院', '体育学院', '医学院', '经济学院']
     for i in range(6):
         id = str(0) + str(i+3)
         name = college1[i]
@@ -30,6 +30,54 @@ def addCampus():
         db.commit()
     print('学院添加完毕！')
 
+def getMajor():
+    arr = []
+    with open("major.txt", encoding="utf_8") as file:
+        lines = file.readlines()
+        for line in lines:  # 得到left和right
+            line = str(line).replace("\n", "")
+            pos = line.split(" ", 10)
+            arr.append(pos)
+    # print(arr)
+    return arr
+
+
+def addMajorClass():
+    sql = "insert into majors(major_id,name,campus_id,optional_course_credis,require_course_credis) values(%s,%s,%s,%s,%s)"
+    sql_1 = "insert into classes(class_id,major_id) values(%s,%s)"
+    major1 = getMajor()
+    num = 7
+    for i in range(3):
+        for j in range(10):
+            if i==0 and j ==0:
+                continue
+            c_id = str(i)
+            c_id += str(j)
+            nu={19:0,20:0,21:0}
+            for k in major1[i*10+j-1]:
+                m_id = '00'
+                if num < 10:
+                    m_id += '00' + str(num)
+                elif num < 100:
+                    m_id += '0' + str(num)
+                else:
+                    m_id += str(num)
+                num += 1
+                cursor.execute(sql, (m_id, k, c_id, '30', '50'))
+                db.commit()
+                for l in range(3):
+                    cl = c_id + str(l+19)
+                    if cl=='2121' or cl=='0120' or cl=='0121' or cl=='0120' or cl=='0221' or cl=='0919':
+                        continue
+                    for m in range(2):
+                        nu[l+19]+=1
+                        if nu[l+19]<10:
+                            cl_id = cl + '0' + str(nu[l+19])
+                        else:
+                            cl_id = cl + str(nu[l + 19])
+                        cursor.execute(sql_1, (cl_id, m_id))
+                        db.commit()
+    print('专业班级添加完毕！')
 
 def addStudent(num):
     # 随机名字
@@ -41,4 +89,5 @@ def addStudent(num):
         str = bytes.fromhex(val).decode('gb2312')
         name += str
 
-addCampus()
+# addCampus()
+# addMajorClass()
