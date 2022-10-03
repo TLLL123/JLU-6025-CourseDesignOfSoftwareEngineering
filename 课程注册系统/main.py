@@ -167,10 +167,13 @@ def conf(stu_id,takes_id):
     return False
 
 #学生
+
 @app.route('/choose_course', methods=['GET', "POST"])
 def choose_course():
     global user_id
     # login session值
+    primary_course = ''
+    alternate_course = ''
     if flask.session.get("login", "") == '':
         # 用户没有登陆
         print('用户还没有登陆!即将重定向!')
@@ -194,7 +197,9 @@ def choose_course():
 
     # 获取显示管理员数据信息(GET方法的时候显示数据)
     if flask.request.method == 'GET':
-        sql_list = "select ta.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition from takes ta inner join sections se inner join courses co inner join teachers te where ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id;"
+        sql_list = "select ta.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition " \
+                   "from takes ta inner join sections se inner join courses co inner join teachers te " \
+                   "where ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id;"
         cursor.execute(sql_list)
         results = cursor.fetchall()
 
@@ -205,34 +210,49 @@ def choose_course():
 
         try:
             # 信息存入数据库
-            sql = "select * from students where student_id=%s"#看是否存在此学号的学生
+            sql = "select * from students where student_id=%s"  # 看是否存在此学号的学生
             cursor.execute(sql, user_id)
             Id = cursor.fetchone()
             # print(re)
-            sql_0 = "select max_num,current_num from takes where takes_id=%s"#看是否存在此课程号或是否满课
+            sql_0 = "select max_num,current_num from takes where takes_id=%s"  # 看是否存在此课程号或是否满课
             cursor.execute(sql_0, takes_id)
             TakeId = cursor.fetchone()
             #
-            sql_4="select * from student_takes where student_id=%s and takes_id=%s"#看是否已经选过了
-            cursor.execute(sql_4, (user_id,takes_id))
+            sql_4 = "select * from student_takes where student_id=%s and takes_id=%s"  # 看是否已经选过了
+            cursor.execute(sql_4, (user_id, takes_id))
             chosen = cursor.fetchone()
+            #
+            sql_5 = "select count(*) from student_takes where student_id=%s"
+            cursor.execute(sql_5, user_id)
+            result_5 = cursor.fetchone()
+            # print(result_5)
+            result_5 = result_5[0]
+            print("result_5:")
+            print(result_5)
+            primary_course = min(result_5, 4)
+            alternate_course = max(result_5 - 4, 0)
 
-            conflict=conf(user_id,takes_id)
+            conflict = conf(user_id, takes_id)
 
-            if Id == None or TakeId==None:
+            if Id == None or TakeId == None:
                 insert_result = "学号或课程号不存在"
-            elif TakeId[0]==TakeId[1]:
+            elif TakeId[0] == TakeId[1]:
                 insert_result = "选课失败，已达最大选课人数"
-            elif chosen!=None:
+            elif chosen != None:
                 insert_result = "该生已选过该课程"
-            elif conflict==True:
-                insert_result="当前课程与已选课程时间冲突"
+            elif conflict == True:
+                insert_result = "当前课程与已选课程时间冲突"
+            elif alternate_course >= 2:
+                insert_result = "选课失败，您已经选择了4门首选课程和2门备选课程"
             else:
                 sql_1 = "insert into student_takes(student_id,takes_id) values(%s,%s)"
                 cursor.execute(sql_1, (user_id, takes_id))
                 sql_2 = "update takes set current_num=current_num+1 where takes_id=%s"
                 cursor.execute(sql_2, (takes_id))
-                insert_result = "成功存入一条学生信息"
+                insert_result = "选课成功"
+                result_5+=1
+                primary_course = min(result_5, 4)
+                alternate_course = max(result_5 - 4, 0)
             print(insert_result)
         except Exception as err:
             print(err)
@@ -241,10 +261,97 @@ def choose_course():
             pass
         db.commit()
         # POST方法时显示数据
-        sql_list = "select ta.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition from takes ta inner join sections se inner join courses co inner join teachers te where ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id;"
+        sql_list = "select ta.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition " \
+                   "from takes ta inner join sections se inner join courses co inner join teachers te " \
+                   "where ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id;"
         cursor.execute(sql_list)
         results = cursor.fetchall()
-    return flask.render_template('student/choose_course.html', submit_switch=submit_switch,insert_result=insert_result, user_info=user_info, results=results)
+
+    return flask.render_template('student/choose_course.html', submit_switch=submit_switch,insert_result=insert_result, user_info=user_info, results=results, primary_course=primary_course, alternate_course=alternate_course)
+
+
+# @app.route('/choose_course', methods=['GET', "POST"])
+# def choose_course():
+#     global user_id
+#     # login session值
+#     if flask.session.get("login", "") == '':
+#         # 用户没有登陆
+#         print('用户还没有登陆!即将重定向!')
+#         return flask.redirect('/')
+#     insert_result = ''
+#     # 当用户登陆有存储信息时显示用户名,否则为空
+#     if users:
+#         for user in users:
+#             user_info = user
+#     else:
+#         user_info = ''
+#
+#     #根据是否关闭注册，选择是否允许提交选课
+#     f1 = open("closeRegisterFlag.txt", encoding="utf-8", mode='r')
+#     if f1.read()=='0':
+#         submit_switch = 'submit'  # 未关闭注册，仍允许选课
+#         print("未关闭注册")
+#     else:
+#         submit_switch = ''
+#         print("已关闭注册")
+#
+#     # 获取显示管理员数据信息(GET方法的时候显示数据)
+#     if flask.request.method == 'GET':
+#         sql_list = "select ta.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition " \
+#                    "from takes ta inner join sections se inner join courses co inner join teachers te " \
+#                    "where ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id;"
+#         cursor.execute(sql_list)
+#         results = cursor.fetchall()
+#
+#     if flask.request.method == 'POST':
+#         # 获取输入的学生信息
+#         # student_id = flask.request.values.get("student_id", "")
+#         takes_id = flask.request.values.get("takes_id", "")
+#
+#         try:
+#             # 信息存入数据库
+#             sql = "select * from students where student_id=%s"#看是否存在此学号的学生
+#             cursor.execute(sql, user_id)
+#             Id = cursor.fetchone()
+#             # print(re)
+#             sql_0 = "select max_num,current_num from takes where takes_id=%s"#看是否存在此课程号或是否满课
+#             cursor.execute(sql_0, takes_id)
+#             TakeId = cursor.fetchone()
+#             #
+#             sql_4="select * from student_takes where student_id=%s and takes_id=%s"#看是否已经选过了
+#             cursor.execute(sql_4, (user_id,takes_id))
+#             chosen = cursor.fetchone()
+#
+#             conflict=conf(user_id,takes_id)
+#
+#             if Id == None or TakeId==None:
+#                 insert_result = "学号或课程号不存在"
+#             elif TakeId[0]==TakeId[1]:
+#                 insert_result = "选课失败，已达最大选课人数"
+#             elif chosen!=None:
+#                 insert_result = "该生已选过该课程"
+#             elif conflict==True:
+#                 insert_result="当前课程与已选课程时间冲突"
+#             else:
+#                 sql_1 = "insert into student_takes(student_id,takes_id) values(%s,%s)"
+#                 cursor.execute(sql_1, (user_id, takes_id))
+#                 sql_2 = "update takes set current_num=current_num+1 where takes_id=%s"
+#                 cursor.execute(sql_2, (takes_id))
+#                 insert_result = "成功存入一条学生信息"
+#             print(insert_result)
+#         except Exception as err:
+#             print(err)
+#             insert_result = "选课信息插入失败"
+#             print(insert_result)
+#             pass
+#         db.commit()
+#         # POST方法时显示数据
+#         sql_list = "select ta.takes_id,co.name,te.name,max_num,current_num,se.start_week,se.end_week,se.start_time,se.end_time,co.tuition " \
+#                    "from takes ta inner join sections se inner join courses co inner join teachers te " \
+#                    "where ta.takes_id=se.takes_id and ta.course_id=co.course_id and ta.teacher_id=te.teacher_id;"
+#         cursor.execute(sql_list)
+#         results = cursor.fetchall()
+#     return flask.render_template('student/choose_course.html', submit_switch=submit_switch,insert_result=insert_result, user_info=user_info, results=results)
 
 @app.route('/drop_course', methods=['GET', "POST"])
 def drop_course():
