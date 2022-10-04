@@ -6,6 +6,8 @@ db = pymysql.connect(host='47.95.148.117', port=3306, charset='utf8', database="
                      user='root', password='Jlu123456')
 cursor = db.cursor()
 first_name = ["王", "李", "张", "刘", "赵", "蒋", "孟", "陈", "徐", "杨", "沈", "马", "高", "殷", "上官", "钟", "常", "谢"]
+gend = ['男', '女']
+last_mail = ['@163.com', '@qq.com', '@gmail.com', '@yeah.net']
 
 def addCampus():
     sql = "insert into campus(campus_id,name) values(%s,%s)"
@@ -156,24 +158,71 @@ def addClassroom():
         db.commit()
     print('教室添加完毕！')
 
+def create_phone():
+	#第二位数
+	second = [3, 4, 5, 7, 8, 9][random.randint(0, 5)]
+	#第三位数
+	third = {
+		3: random.randint(0, 9),
+		4: [5, 7, 9][random.randint(0, 2)],
+		5: [i for i in range(10) if i != 4][random.randint(0, 8)],
+		7: [i for i in range(10) if i not in [4, 9]][random.randint(0,7)],
+		8: random.randint(0, 9),
+		9: random.randint(0, 9)
+	}[second]
+	#最后8位数
+	suffix = random.randint(9999999, 100000000)
+	#拼接手机号
+	return "1{}{}{}".format(second, third, suffix)
+
 def addStudent(class_id,num,name_num):
     sql = "insert into students(student_id,name,state,class_id,gender,birthday,phone,mail,social_security_number,status,graduation_date) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     # 随机名字
-    gend = ['男','女']
-    birth = radar.random_date("2000-01-01", "2970-01-01")
-    phone =
+    birth = radar.random_date("2000-01-01", "2003-01-01")
+    phone = create_phone()
+    mail = phone + random.choice(last_mail)
+    g_date = '20' + str(int(class_id[2:4]) + 4) + '-06-01'
+    if num < 10:
+        s_id = class_id + '0' + str(num)
+    else:
+        s_id = class_id + str(num)
     name = random.choice(first_name)
     for i in range(name_num):
         head = random.randint(0xb0, 0xf7)
         body = random.randint(0xa1, 0xfe)
         val = f'{head:x} {body:x}'
-        str = bytes.fromhex(val).decode('gb2312')
-        name += str
-    print(name)
+        str_1 = bytes.fromhex(val).decode('gb2312')
+        name += str_1
+    cursor.execute(sql, (s_id, name, 1, class_id, random.choice(gend), birth, phone, mail, s_id, 'undergraduate', g_date))
+    db.commit()
+
+def addTeacher(num, name_num):
+    sql = "insert into teachers(teacher_id,name,gender,birthday,phone,mail,social_security_number,status,department) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    birth = radar.random_date("1960-01-01", "1990-01-01")
+    depart = ['Biology', 'Comp.Sci', 'Elec.Eng.', 'Finance', 'History', 'Music', 'Physics']
+    status1 = ['emeritus professor', 'associate professor', 'professor']
+    phone = create_phone()
+    mail = phone + random.choice(last_mail)
+    name = random.choice(first_name)
+    if num < 10:
+        t_id = '00000' + str(num)
+    elif num < 100:
+        t_id = '0000' + str(num)
+    elif num < 1000:
+        t_id = '000' + str(num)
+    else:
+        t_id = '00' + str(num)
+    for i in range(name_num):
+        head = random.randint(0xb0, 0xf7)
+        body = random.randint(0xa1, 0xfe)
+        val = f'{head:x} {body:x}'
+        str_1 = bytes.fromhex(val).decode('gb2312')
+        name += str_1
+    cursor.execute(sql, (t_id, name, random.choice(gend), birth, phone, mail, t_id, random.choice(status1), random.choice(depart)))
+    db.commit()
 
 # addCampus()
 # addMajorClass()
 # addCourse()
 # addSem()
 # addClassroom()
-addStudent(1)
