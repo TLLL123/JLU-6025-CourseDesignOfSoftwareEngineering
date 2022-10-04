@@ -2,10 +2,13 @@ import pymysql  # 连接数据库
 import random
 import radar
 
-db = pymysql.connect(host='47.95.148.117', port=3306, charset='utf8', database="course_registration_system",
+# db = pymysql.connect(host='47.95.148.117', port=3306, charset='utf8', database="course_registration_system",
+#                      user='root', password='Jlu123456')
+db = pymysql.connect(host='47.95.148.117', port=3306, charset='utf8', database="wxh_database",
                      user='root', password='Jlu123456')
 cursor = db.cursor()
 first_name = ["王", "李", "张", "刘", "赵", "蒋", "孟", "陈", "徐", "杨", "沈", "马", "高", "殷", "上官", "钟", "常", "谢"]
+second_name = ["伟", "华", "建","国", "洋", "刚", "万","里", "爱","民", "牧", "陆", "路", "昕", "鑫", "兵", "硕", "志","宏", "峰", "磊", "雷", "文","明","浩", "光", "超", "军", "达"]
 gend = ['男', '女']
 last_mail = ['@163.com', '@qq.com', '@gmail.com', '@yeah.net']
 
@@ -188,12 +191,12 @@ def addStudent(class_id,num,name_num):
         s_id = class_id + str(num)
     name = random.choice(first_name)
     for i in range(name_num):
-        head = random.randint(0xb0, 0xf7)
-        body = random.randint(0xa1, 0xfe)
-        val = f'{head:x} {body:x}'
-        str_1 = bytes.fromhex(val).decode('gb2312')
+        str_1 = random.choice(second_name)
         name += str_1
     cursor.execute(sql, (s_id, name, 1, class_id, random.choice(gend), birth, phone, mail, s_id, 'undergraduate', g_date))
+    db.commit()
+    sql_1 = "insert into login(name,passwd,identity) values(%s,%s,%s)"
+    cursor.execute(sql_1, (s_id, '123456', '3'))
     db.commit()
 
 def addTeacher(num, name_num):
@@ -204,47 +207,50 @@ def addTeacher(num, name_num):
     phone = create_phone()
     mail = phone + random.choice(last_mail)
     name = random.choice(first_name)
+    t_id = '01'
     if num < 10:
-        t_id = '00000' + str(num)
+        t_id += '000' + str(num)
     elif num < 100:
-        t_id = '0000' + str(num)
+        t_id += '00' + str(num)
     elif num < 1000:
-        t_id = '000' + str(num)
+        t_id += '0' + str(num)
     else:
-        t_id = '00' + str(num)
+        t_id += str(num)
     for i in range(name_num):
-        head = random.randint(0xb0, 0xf7)
-        body = random.randint(0xa1, 0xfe)
-        val = f'{head:x} {body:x}'
-        str_1 = bytes.fromhex(val).decode('gb2312')
+        str_1 = random.choice(second_name)
         name += str_1
     cursor.execute(sql, (t_id, name, random.choice(gend), birth, phone, mail, t_id, random.choice(status1), random.choice(depart)))
+    db.commit()
+    sql_1 = "insert into login(name,passwd,identity) values(%s,%s,%s)"
+    cursor.execute(sql_1, (t_id, '123456', '2'))
     db.commit()
 
 def addTeach(num,co_id):
     name_num = [1, 2, 3]
     addTeacher(num,random.choice(name_num))
+    t_id = '01'
     if num < 10:
-        t_id = '00000' + str(num)
+        t_id += '000' + str(num)
     elif num < 100:
-        t_id = '0000' + str(num)
+        t_id += '00' + str(num)
     elif num < 1000:
-        t_id = '000' + str(num)
+        t_id += '0' + str(num)
     else:
-        t_id = '00' + str(num)
+        t_id += str(num)
     sql = "insert into teacher_teaches(teacher_id,course_id) values(%s,%s)"
     cursor.execute(sql,(t_id,co_id))
     db.commit()
 
 def addTakes(ta_num,co_id,sem_id,te_num):
+    te_id = '01'
     if te_num < 10:
-        te_id = '00000' + str(te_num)
+        te_id += '000' + str(te_num)
     elif te_num < 100:
-        te_id = '0000' + str(te_num)
+        te_id += '00' + str(te_num)
     elif te_num < 1000:
-        te_id = '000' + str(te_num)
+        te_id += '0' + str(te_num)
     else:
-        te_id = '00' + str(te_num)
+        te_id += str(te_num)
     t_id = '0100'
     if ta_num < 10:
         t_id += '000' + str(ta_num)
@@ -277,16 +283,67 @@ def addStuTak(class_id,num,ta_num):
     cursor.execute(sql, (s_id,t_id,sco))
     db.commit()
 
-def addSemStuTeaTake(sem_id, sem_num, ta_num1, te_num1):
+def getSection():
+    sec = []
+    for i in range(2):
+        for j in range(7):
+            for k in range(5):
+                arr = []
+                arr.append((i+1)*10-9)
+                arr.append((i+1)*10)
+                arr.append((k+1)*2-1)
+                arr.append((k + 1) * 2)
+                arr.append(j+1)
+                sec.append(arr)
+    return sec
+
+def addSection(sec_time,sec_num,clr_num,ta_num,te_num):
+    sql = "insert into sections(section_id,start_week,end_week,start_time,end_time,weekday,teacher_id,takes_id,classroom_id) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    te_id = '01'
+    if te_num < 10:
+        te_id += '000' + str(te_num)
+    elif te_num < 100:
+        te_id += '00' + str(te_num)
+    elif te_num < 1000:
+        te_id += '0' + str(te_num)
+    else:
+        te_id += str(te_num)
+    t_id = '0100'
+    if ta_num < 10:
+        t_id += '000' + str(ta_num)
+    elif ta_num < 100:
+        t_id += '00' + str(ta_num)
+    elif ta_num < 1000:
+        t_id += '0' + str(ta_num)
+    else:
+        t_id += str(ta_num)
+    s_id = '000000'
+    if sec_num < 100:
+        s_id += '00' + str(sec_num)
+    elif sec_num < 1000:
+        s_id += '0' + str(sec_num)
+    else:
+        s_id += str(sec_num)
+    clr_id = '000' + str(clr_num)
+    cursor.execute(sql, (s_id, str(sec_time[0]), str(sec_time[1]), str(sec_time[2]), str(sec_time[3]), str(sec_time[4]), te_id, t_id,clr_id))
+    db.commit()
+
+def addSemStuTeaTake(sem_id, sem_num, ta_num1, te_num1, sec_num1):
     sem_id1 = '0000' + str(sem_id)
     sem_id2 = '0000' + str(sem_id+1)
+    co_id1 = ['000109','000110']
+    co_id2 = ['000111','000112','000113']
     name_num = [1,2,3]
     major1 = getMajor()
     num = 11
     ta_num = ta_num1
     te_num = te_num1
-    for i in range(1):
-        for j in range(5):
+    sec_time = getSection()
+    sec_dpo = 0
+    sec_num = sec_num1
+    clr_num = 11
+    for i in range(3):
+        for j in range(10):
             if i==0 and j ==0:
                 continue
             c_id = str(i)
@@ -300,7 +357,7 @@ def addSemStuTeaTake(sem_id, sem_num, ta_num1, te_num1):
                     co_id += str(num)
                 num += 1
                 cl = c_id + str(sem_num)
-                if cl == '2121' or cl == '0120' or cl == '0121' or cl == '0120' or cl == '0221' or cl == '0919':
+                if cl == '2121' or cl == '0120' or cl == '0121' or cl == '0221' or cl == '0919':
                     continue
                 for m in range(2):
                     nu[sem_num] += 1
@@ -308,14 +365,34 @@ def addSemStuTeaTake(sem_id, sem_num, ta_num1, te_num1):
                         cl_id = cl + '0' + str(nu[sem_num])
                     else:
                         cl_id = cl + str(nu[sem_num])
+                    addTeach(te_num,co_id)
+                    addTakes(ta_num,co_id,sem_id1,te_num)
+                    addSection(sec_time[sec_dpo],sec_num,clr_num,ta_num,te_num)
                     for n in range(11):
                         if n == 0:
                             continue
                         addStudent(cl_id,n,random.choice(name_num))
-                    addTeach(te_num,co_id)
-                    addTakes(ta_num,co_id,sem_id1,te_num)
+                        addStuTak(cl_id,n,ta_num)
                     ta_num += 1
                     te_num += 1
+                    if sec_dpo + 1 >= 70:
+                        clr_num += 1
+                    sec_dpo = (sec_dpo+1)%70
+                    sec_num += 1
+                    for l in co_id1:
+                        addTeach(te_num, l)
+                        addTakes(ta_num, l, sem_id1, te_num)
+                        addSection(sec_time[sec_dpo], sec_num, clr_num, ta_num, te_num)
+                        for n in range(11):
+                            if n == 0:
+                                continue
+                            addStuTak(cl_id, n, ta_num)
+                        ta_num += 1
+                        te_num += 1
+                        if sec_dpo + 1 >= 70:
+                            clr_num += 1
+                        sec_dpo = (sec_dpo + 1) % 70
+                        sec_num += 1
 
 
 # addCampus()
@@ -323,4 +400,6 @@ def addSemStuTeaTake(sem_id, sem_num, ta_num1, te_num1):
 # addCourse()
 # addSem()
 # addClassroom()
-# addSemStuTeaTake(4,19,1,10)
+# addSemStuTeaTake(4,19,1,15,22)
+# addSemStuTeaTake(6,20,571,1,592)
+# addSemStuTeaTake(1,21,982,418,1005)
