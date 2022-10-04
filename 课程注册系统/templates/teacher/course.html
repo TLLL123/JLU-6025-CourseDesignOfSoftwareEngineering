@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教务管理系统</title>
-    <link rel="icon" href="http://v3.bootcss.com/favicon.ico">
+    <link rel="icon" href="static/images/icon-6025.png">
     <style type="text/css">
             .top{
                 /* 设置宽度高度背景颜色 */
@@ -121,7 +121,6 @@
 
     <div class="container-fluid">
         <h1 class="sub-header">课 程 信 息 修 改</h1>
-        &nbsp;&nbsp;
         <hr>
         <span>请输入修改的信息：</span>
         <div class="table-responsive">
@@ -145,6 +144,7 @@
                     <td class="title">教学楼</td>
                     <td class="title">教室</td>
                     <td class="title">最大选课人数</td>
+                    <td class="title">当前已选人数</td>
                     <td class="title">教室id</td>
                     <td class="title">教室人数容量</td>
                 </tr>
@@ -157,6 +157,7 @@
                     <td class="data">{{result[4]}}</td>
                     <td class="data">{{result[5]}}</td>
                     <td class="data">{{result[6]}}</td>
+                    <td class="data">{{result[7]}}</td>
                 </tr>
                 {% endfor %}
             </table>
