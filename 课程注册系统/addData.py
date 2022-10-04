@@ -221,8 +221,106 @@ def addTeacher(num, name_num):
     cursor.execute(sql, (t_id, name, random.choice(gend), birth, phone, mail, t_id, random.choice(status1), random.choice(depart)))
     db.commit()
 
+def addTeach(num,co_id):
+    name_num = [1, 2, 3]
+    addTeacher(num,random.choice(name_num))
+    if num < 10:
+        t_id = '00000' + str(num)
+    elif num < 100:
+        t_id = '0000' + str(num)
+    elif num < 1000:
+        t_id = '000' + str(num)
+    else:
+        t_id = '00' + str(num)
+    sql = "insert into teacher_teaches(teacher_id,course_id) values(%s,%s)"
+    cursor.execute(sql,(t_id,co_id))
+    db.commit()
+
+def addTakes(ta_num,co_id,sem_id,te_num):
+    if te_num < 10:
+        te_id = '00000' + str(te_num)
+    elif te_num < 100:
+        te_id = '0000' + str(te_num)
+    elif te_num < 1000:
+        te_id = '000' + str(te_num)
+    else:
+        te_id = '00' + str(te_num)
+    t_id = '0100'
+    if ta_num < 10:
+        t_id += '000' + str(ta_num)
+    elif ta_num < 100:
+        t_id += '00' + str(ta_num)
+    elif ta_num < 1000:
+        t_id += '0' + str(ta_num)
+    else:
+        t_id += str(ta_num)
+    sql = "insert into takes(takes_id,course_id,semester_id,teacher_id,max_num,current_num) values(%s,%s,%s,%s,%s,%s)"
+    cursor.execute(sql, (t_id, co_id,sem_id,te_id,'10','10'))
+    db.commit()
+
+def addStuTak(class_id,num,ta_num):
+    sco = random.randint(60, 99)
+    if num < 10:
+        s_id = class_id + '0' + str(num)
+    else:
+        s_id = class_id + str(num)
+    t_id = '0100'
+    if ta_num < 10:
+        t_id += '000' + str(ta_num)
+    elif ta_num < 100:
+        t_id += '00' + str(ta_num)
+    elif ta_num < 1000:
+        t_id += '0' + str(ta_num)
+    else:
+        t_id += str(ta_num)
+    sql = "insert into student_takes(student_id,takes_id, score) values(%s,%s,%s)"
+    cursor.execute(sql, (s_id,t_id,sco))
+    db.commit()
+
+def addSemStuTeaTake(sem_id, sem_num, ta_num1, te_num1):
+    sem_id1 = '0000' + str(sem_id)
+    sem_id2 = '0000' + str(sem_id+1)
+    name_num = [1,2,3]
+    major1 = getMajor()
+    num = 11
+    ta_num = ta_num1
+    te_num = te_num1
+    for i in range(1):
+        for j in range(5):
+            if i==0 and j ==0:
+                continue
+            c_id = str(i)
+            c_id += str(j)
+            nu={19:0,20:0,21:0}
+            for k in major1[i*10+j-1]:
+                co_id = '000'
+                if num < 100:
+                    co_id += '0' + str(num)
+                else:
+                    co_id += str(num)
+                num += 1
+                cl = c_id + str(sem_num)
+                if cl == '2121' or cl == '0120' or cl == '0121' or cl == '0120' or cl == '0221' or cl == '0919':
+                    continue
+                for m in range(2):
+                    nu[sem_num] += 1
+                    if nu[sem_num] < 10:
+                        cl_id = cl + '0' + str(nu[sem_num])
+                    else:
+                        cl_id = cl + str(nu[sem_num])
+                    for n in range(11):
+                        if n == 0:
+                            continue
+                        addStudent(cl_id,n,random.choice(name_num))
+                    addTeach(te_num,co_id)
+                    addTakes(ta_num,co_id,sem_id1,te_num)
+                    ta_num += 1
+                    te_num += 1
+
+
 # addCampus()
 # addMajorClass()
 # addCourse()
 # addSem()
 # addClassroom()
+# addSemStuTeaTake(4,19,1,10)
