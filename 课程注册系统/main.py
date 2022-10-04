@@ -21,8 +21,8 @@ app = flask.Flask(__name__)
 db=[]
 # 初始化数据库连接
 # 使用pymysql.connect方法连接本地mysql数据库
-# db = pymysql.connect(host='localhost', port=3306, charset='utf8', database="course_registration_system2", user='root', password='123456')
-
+db = pymysql.connect(host='localhost', port=3306, charset='utf8', database="course_registration_system3", user='root', password='123456')
+'''
 #连接服务器中的远程数据库
 try:
     db = pymysql.connect(host=databaseParameter[0],
@@ -41,7 +41,7 @@ except Exception as errorMsg:
     if errorMsg.args[0]==1045:
         print("\33[31m数据库连接失败，请确保数据库配置文件中的参数正确，再尝试重新连接！\33[36m")
         print(errorMsg)
-    elif errorMsg.args[0]==2013:
+    elif errorMsg.args[0] in (2013,2003):
         print("\33[31m数据库连接失败，请确保数数据库已打开，再尝试重新连接！\33[36m")
         print(errorMsg)
     else:
@@ -49,7 +49,7 @@ except Exception as errorMsg:
         print(errorMsg)
 
     exit()
-
+'''
 # 操作数据库，获取db下的cursor对象
 cursor = db.cursor()
 
@@ -977,9 +977,27 @@ def delete_teach_course():
         # 获取输入的课程号信息
         course_id = flask.request.values.get("week", "")
         print("course_id=",course_id)
+
+        sql0 = "select course_id from teacher_teaches where teacher_id=%s;"
+        cursor.execute(sql0, (teacher_id))
+        result0=cursor.fetchall()
+        print(result0)
+
+        inflag=0
+        for each in result0:
+            if str(course_id) in each:
+                inflag=1
+                break
+        print(inflag)
+
+        if inflag==0:
+            return flask.render_template('teacher/delete_teach_course.html', insert_result="删除失败！请确保要删除的课程是已选课程",
+                                         user_info=user_info, results=results2, results_course=results3)
+
         # 信息存入数据库
         try:
             sql1 = "delete from teacher_teaches where teacher_id=%s and course_id=%s;"
+            print(teacher_id,course_id)
             cursor.execute(sql1, (teacher_id,course_id))
             results1 = cursor.fetchall()
 
