@@ -1,1 +1,4 @@
 这是6025六人组的软件工程课程设计项目
+项目基于Python+HTML语言进行开发，使用Flask框架作为前后端交互工具
+requirements.txt为项目运行所需环境
+项目入口为main.py
