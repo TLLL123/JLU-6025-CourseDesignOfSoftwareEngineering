@@ -21,8 +21,8 @@ app = flask.Flask(__name__)
 db=[]
 # 初始化数据库连接
 # 使用pymysql.connect方法连接本地mysql数据库
-db = pymysql.connect(host='localhost', port=3306, charset='utf8', database="course_registration_system3", user='root', password='123456')
-'''
+# db = pymysql.connect(host='localhost', port=3306, charset='utf8', database="course_registration_system3", user='root', password='123456')
+
 #连接服务器中的远程数据库
 try:
     db = pymysql.connect(host=databaseParameter[0],
@@ -49,7 +49,7 @@ except Exception as errorMsg:
         print(errorMsg)
 
     exit()
-'''
+
 # 操作数据库，获取db下的cursor对象
 cursor = db.cursor()
 
@@ -118,7 +118,9 @@ def avi_conf(sem_id,wek_id,day_id,s_time,e_time):
         arr = [0] * 2000  # 即[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         room_id=line_1[0]
         print(sem_id,room_id)
-        sql = "select se.start_week,se.end_week,se.start_time,se.end_time,se.weekday from sections se inner join takes ta on se.takes_id=ta.takes_id where ta.semester_id=%s and se.classroom_id=%s"
+        sql = "select se.start_week,se.end_week,se.start_time,se.end_time,se.weekday " \
+              "from sections se inner join takes ta on se.takes_id=ta.takes_id " \
+              "where ta.semester_id=%s and se.classroom_id=%s"
         cursor.execute(sql, (sem_id,room_id))
         table = cursor.fetchall()
         print(table)
@@ -712,7 +714,8 @@ def find_available():
             pos = avi_conf(select_one, select_two, select_three, select_four, select_five)
             print(pos)
             # print(user_id,select,results)
-            if(select_four>select_five) :query_result = '要求:开始节数≤结束结束!'
+            if(select_four>select_five) :
+                query_result = '要求:开始节数≤结束节数!'
             elif len(pos)!=0:
                 results=pos
                 query_result = '查询成功!'
